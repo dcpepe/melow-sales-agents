@@ -8,7 +8,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [recentDeals, setRecentDeals] = useState<Deal[]>([]);
   const [granolaNotes, setGranolaNotes] = useState<GranolaNoteListItem[]>([]);
-  const [loadingAnalyses, setLoadingAnalyses] = useState(true);
+  const [loadingDeals, setLoadingDeals] = useState(true);
   const [loadingNotes, setLoadingNotes] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreNotes, setHasMoreNotes] = useState(false);
@@ -20,7 +20,7 @@ export default function Dashboard() {
     listDeals()
       .then((data) => setRecentDeals(data))
       .catch(() => {})
-      .finally(() => setLoadingAnalyses(false));
+      .finally(() => setLoadingDeals(false));
 
     listGranolaNotes()
       .then((data) => {
@@ -103,20 +103,20 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Melow Sales Intelligence</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Call analysis, MEDPICC scoring &amp; deal rooms</p>
+            <p className="text-sm text-gray-500 mt-0.5">Deal tracking, MEDPICC scoring &amp; deal rooms</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/deals")}
               className="border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
             >
-              Deal Archive
+              Deal Intelligence
             </button>
             <button
               onClick={() => router.push("/analyze")}
               className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
             >
-              + New Analysis
+              + New Deal
             </button>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function Dashboard() {
               </svg>
             </div>
             <h3 className="font-semibold text-gray-900">Paste Transcript</h3>
-            <p className="text-sm text-gray-500 mt-1">Analyze a sales call from a pasted transcript</p>
+            <p className="text-sm text-gray-500 mt-1">Add a new deal by pasting a call transcript</p>
           </button>
 
           <button
@@ -148,47 +148,58 @@ export default function Dashboard() {
               </svg>
             </div>
             <h3 className="font-semibold text-gray-900">Import from Granola</h3>
-            <p className="text-sm text-gray-500 mt-1">Pull transcripts directly from your Granola meetings</p>
+            <p className="text-sm text-gray-500 mt-1">Add a new deal from your Granola meetings</p>
           </button>
 
-          <div className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl shadow-sm p-5 text-left">
+          <button
+            onClick={() => router.push("/deals")}
+            className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl shadow-sm p-5 text-left hover:from-gray-800 hover:to-gray-600 transition-colors cursor-pointer"
+          >
             <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mb-3">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
             <h3 className="font-semibold text-white">
-              {recentDeals.length} {recentDeals.length === 1 ? "Analysis" : "Analyses"}
+              {recentDeals.length} {recentDeals.length === 1 ? "Deal" : "Deals"}
             </h3>
             <p className="text-sm text-gray-300 mt-1">
               {recentDeals.length > 0
-                ? `Avg call score: ${Math.round(recentDeals.reduce((sum, a) => sum + (a.latest_call_score || 0), 0) / recentDeals.length)}`
-                : "No analyses yet"}
+                ? `View all deals & pipeline intelligence`
+                : "No deals yet — add your first one"}
             </p>
-          </div>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Analyses */}
+          {/* Recent Deals */}
           <div className="bg-white rounded-xl border shadow-sm">
             <div className="px-5 py-4 border-b flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Recent Analyses</h2>
+              <h2 className="font-semibold text-gray-900">Recent Deals</h2>
+              {recentDeals.length > 0 && (
+                <button
+                  onClick={() => router.push("/deals")}
+                  className="text-xs text-gray-500 hover:text-gray-900 font-medium"
+                >
+                  View all &rarr;
+                </button>
+              )}
             </div>
             <div className="divide-y">
-              {loadingAnalyses ? (
+              {loadingDeals ? (
                 <div className="px-5 py-8 text-center text-sm text-gray-400">Loading...</div>
               ) : recentDeals.length === 0 ? (
                 <div className="px-5 py-8 text-center">
-                  <p className="text-sm text-gray-400 mb-3">No analyses yet</p>
+                  <p className="text-sm text-gray-400 mb-3">No deals yet</p>
                   <button
                     onClick={() => router.push("/analyze")}
                     className="text-sm text-gray-900 font-medium hover:underline"
                   >
-                    Analyze your first call &rarr;
+                    Add your first deal &rarr;
                   </button>
                 </div>
               ) : (
-                recentDeals.map((deal) => (
+                recentDeals.slice(0, 8).map((deal) => (
                   <button
                     key={deal.id}
                     onClick={() => router.push(`/deals/${deal.id}`)}
@@ -199,7 +210,7 @@ export default function Dashboard() {
                         {deal.deal_name || deal.company || "Untitled Deal"}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {deal.company} {deal.call_count > 0 ? `· ${deal.call_count} call${deal.call_count !== 1 ? "s" : ""}` : ""}
+                        {deal.company}{deal.call_count > 0 ? ` · ${deal.call_count} call${deal.call_count !== 1 ? "s" : ""}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 ml-4">
@@ -299,7 +310,7 @@ export default function Dashboard() {
             </div>
               );
             })()}
-            {hasMoreNotes && (
+            {hasMoreNotes && !noteSearch && (
               <div className="px-5 py-3 border-t">
                 <button
                   onClick={loadMoreNotes}

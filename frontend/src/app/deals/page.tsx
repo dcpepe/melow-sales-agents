@@ -158,7 +158,7 @@ export default function DealsPage() {
             onClick={() => router.push("/analyze")}
             className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800"
           >
-            + New Analysis
+            + New Deal
           </button>
         </div>
       </header>
@@ -170,12 +170,12 @@ export default function DealsPage() {
           <div className="text-center py-20">
             <div className="text-5xl mb-4">&#128202;</div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">No deals yet</h2>
-            <p className="text-gray-500 mb-6">Analyze your first sales call to start building your pipeline</p>
+            <p className="text-gray-500 mb-6">Add your first deal to start building your pipeline</p>
             <button
               onClick={() => router.push("/analyze")}
               className="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800"
             >
-              Analyze a Call
+              Add a Deal
             </button>
           </div>
         ) : (

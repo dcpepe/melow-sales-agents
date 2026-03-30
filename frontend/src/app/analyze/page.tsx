@@ -194,7 +194,7 @@ function AnalyzeContent() {
                 onClick={() => { setResult(null); setDealChosen(false); }}
                 className="text-sm text-gray-500 hover:text-gray-900"
               >
-                &larr; New Analysis
+                &larr; New Deal
               </button>
               <button
                 onClick={() => router.push(`/deals/${result.deal_id}`)}

@@ -182,6 +182,12 @@ export interface Deal {
   medpicc_history: MedpiccSnapshot[];
   call_count: number;
   analysis_ids: string[];
+  // Enriched intelligence from latest analysis (populated by GET /api/deals)
+  key_mistakes?: string[];
+  open_questions?: string[];
+  coaching?: string[];
+  recommended_actions?: string[];
+  medpicc_breakdown?: Record<string, { score: number; summary: string; missing_info: string[] }>;
 }
 
 export interface AnalysisVersion {

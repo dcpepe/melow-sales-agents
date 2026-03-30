@@ -120,7 +120,38 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ deals });
+    // Enrich with latest analysis intelligence (cached, no recomputation)
+    const enrichedDeals = [];
+    for (const deal of deals) {
+      const analysisIds = (deal.analysis_ids as string[]) || [];
+      let intelligence: Record<string, unknown> = {};
+      if (analysisIds.length > 0) {
+        const latest = await kv.get<Record<string, unknown>>(`analysis:${analysisIds[0]}`);
+        if (latest) {
+          const ca = latest.call_analysis as Record<string, unknown> | undefined;
+          const mp = latest.medpicc as Record<string, unknown> | undefined;
+          intelligence = {
+            key_mistakes: ((ca?.key_mistakes as string[]) || []).slice(0, 3),
+            open_questions: ((ca?.open_questions as string[]) || []).slice(0, 3),
+            coaching: ((ca?.coaching as string[]) || []).slice(0, 3),
+            recommended_actions: ((mp?.recommended_actions as string[]) || []).slice(0, 3),
+            medpicc_breakdown: {
+              metrics: mp?.metrics,
+              economic_buyer: mp?.economic_buyer,
+              decision_criteria: mp?.decision_criteria,
+              decision_process: mp?.decision_process,
+              paper_process: mp?.paper_process,
+              identify_pain: mp?.identify_pain,
+              champion: mp?.champion,
+              competition: mp?.competition,
+            },
+          };
+        }
+      }
+      enrichedDeals.push({ ...deal, ...intelligence });
+    }
+
+    return NextResponse.json({ deals: enrichedDeals });
   } catch (error) {
     console.error("List deals error:", error);
     return NextResponse.json({ deals: [] });

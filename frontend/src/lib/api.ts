@@ -126,13 +126,14 @@ export interface GranolaNoteDetail {
   created_at?: string;
 }
 
-export async function listGranolaNotes(createdAfter?: string): Promise<{
+export async function listGranolaNotes(createdAfter?: string, cursor?: string): Promise<{
   notes: GranolaNoteListItem[];
   hasMore: boolean;
   cursor?: string;
 }> {
   const params = new URLSearchParams();
   if (createdAfter) params.set("created_after", createdAfter);
+  if (cursor) params.set("cursor", cursor);
   const res = await fetch(`${API_BASE}/granola/notes?${params}`);
   if (!res.ok) throw new Error("Failed to fetch Granola notes");
   return res.json();

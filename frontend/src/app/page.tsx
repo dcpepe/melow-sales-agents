@@ -19,6 +19,9 @@ export default function Dashboard() {
   const [granolaNotes, setGranolaNotes] = useState<GranolaNoteListItem[]>([]);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
   const [loadingNotes, setLoadingNotes] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreNotes, setHasMoreNotes] = useState(false);
+  const [notesCursor, setNotesCursor] = useState<string | undefined>();
   const [importingNote, setImportingNote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,12 +31,30 @@ export default function Dashboard() {
       .catch(() => {})
       .finally(() => setLoadingAnalyses(false));
 
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    listGranolaNotes(thirtyDaysAgo)
-      .then((data) => setGranolaNotes(data.notes || []))
+    listGranolaNotes()
+      .then((data) => {
+        setGranolaNotes(data.notes || []);
+        setHasMoreNotes(data.hasMore);
+        setNotesCursor(data.cursor);
+      })
       .catch(() => {})
       .finally(() => setLoadingNotes(false));
   }, []);
+
+  async function loadMoreNotes() {
+    if (!notesCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const data = await listGranolaNotes(undefined, notesCursor);
+      setGranolaNotes((prev) => [...prev, ...(data.notes || [])]);
+      setHasMoreNotes(data.hasMore);
+      setNotesCursor(data.cursor);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function handleImportNote(noteId: string) {
     setImportingNote(noteId);
@@ -206,10 +227,10 @@ export default function Dashboard() {
           {/* Granola Notes */}
           <div className="bg-white rounded-xl border shadow-sm">
             <div className="px-5 py-4 border-b flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Recent Granola Meetings</h2>
-              <span className="text-xs text-gray-400">Last 30 days</span>
+              <h2 className="font-semibold text-gray-900">Granola Meetings</h2>
+              <span className="text-xs text-gray-400">{granolaNotes.length} loaded</span>
             </div>
-            <div className="divide-y">
+            <div className="divide-y max-h-[500px] overflow-y-auto">
               {loadingNotes ? (
                 <div className="px-5 py-8 text-center text-sm text-gray-400">Loading...</div>
               ) : granolaNotes.length === 0 ? (
@@ -218,7 +239,7 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-300 mt-1">Check your GRANOLA_API_KEY</p>
                 </div>
               ) : (
-                granolaNotes.slice(0, 10).map((note) => (
+                granolaNotes.map((note) => (
                   <button
                     key={note.id}
                     onClick={() => handleImportNote(note.id)}
@@ -241,6 +262,17 @@ export default function Dashboard() {
                 ))
               )}
             </div>
+            {hasMoreNotes && (
+              <div className="px-5 py-3 border-t">
+                <button
+                  onClick={loadMoreNotes}
+                  disabled={loadingMore}
+                  className="w-full text-sm text-gray-600 font-medium hover:text-gray-900 disabled:opacity-50"
+                >
+                  {loadingMore ? "Loading..." : "Load More Meetings"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -159,6 +159,10 @@ export interface DealListItem {
   medpicc_score: number | null;
   risk_assessment: string | null;
   deal_probability: number | null;
+  recommended_actions: string[] | null;
+  medpicc_categories: Record<string, number> | null;
+  open_questions: string[] | null;
+  key_mistakes: string[] | null;
   created_at: string | null;
 }
 

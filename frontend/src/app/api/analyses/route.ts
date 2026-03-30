@@ -16,15 +16,30 @@ export async function GET() {
       if (data && typeof data === "object") {
         const d = data as Record<string, unknown>;
         const medpicc = d.medpicc as Record<string, unknown> | undefined;
+        const callAnalysis = d.call_analysis as Record<string, unknown> | undefined;
+
+        // Extract MEDPICC category scores
+        const medpiccCategories: Record<string, number> = {};
+        if (medpicc) {
+          for (const key of ["metrics", "economic_buyer", "decision_criteria", "decision_process", "paper_process", "identify_pain", "champion", "competition"]) {
+            const cat = medpicc[key] as Record<string, unknown> | undefined;
+            if (cat) medpiccCategories[key] = cat.score as number;
+          }
+        }
+
         recent.push({
           id: d.id,
           deal_name: d.deal_name,
           company: d.company,
           participants: d.participants,
-          call_score: (d.call_analysis as Record<string, unknown>)?.call_score,
+          call_score: callAnalysis?.call_score,
           medpicc_score: medpicc?.overall_score,
           risk_assessment: medpicc?.risk_assessment,
           deal_probability: medpicc?.deal_probability,
+          recommended_actions: medpicc?.recommended_actions,
+          medpicc_categories: medpiccCategories,
+          open_questions: callAnalysis?.open_questions,
+          key_mistakes: callAnalysis?.key_mistakes,
           created_at: d.created_at || null,
         });
       }

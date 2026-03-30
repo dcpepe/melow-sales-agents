@@ -7,8 +7,9 @@ import ActionPlanTab from "@/components/ActionPlanTab";
 import DealRoomTab from "@/components/DealRoomTab";
 import ChatSidebar from "@/components/ChatSidebar";
 import DealHeader from "@/components/DealHeader";
+import MeetingPrepTab from "@/components/MeetingPrepTab";
 
-type Tab = "overview" | "calls" | "actions" | "dealroom";
+type Tab = "overview" | "calls" | "prep" | "actions" | "dealroom";
 
 const MEDPICC_LABELS: Record<string, string> = {
   metrics: "Metrics",
@@ -42,6 +43,7 @@ export default function DealIntelligencePage() {
   const tabs: { key: Tab; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "calls", label: `Calls (${analyses.length})` },
+    { key: "prep", label: "Meeting Prep" },
     { key: "actions", label: "Action Plan" },
     { key: "dealroom", label: "Deal Room" },
   ];
@@ -327,7 +329,12 @@ export default function DealIntelligencePage() {
           </div>
         )}
 
-        {/* Action Plan & Deal Room — use latest analysis */}
+        {/* Meeting Prep */}
+        {activeTab === "prep" && analyses.length > 0 && (
+          <MeetingPrepTab dealId={id} />
+        )}
+
+        {/* Action Plan & Deal Room */}
         {activeTab === "actions" && analyses.length > 0 && (
           <ActionPlanTab dealId={id} />
         )}

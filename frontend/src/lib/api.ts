@@ -47,6 +47,7 @@ export interface MEDPICCScoring {
 
 export interface AnalysisResponse {
   id: string;
+  deal_id: string;
   speaker_turns: SpeakerTurn[];
   call_analysis: CallAnalysis;
   medpicc: MEDPICCScoring;
@@ -71,21 +72,16 @@ export interface DealRoomResponse {
   shareable_url: string;
 }
 
-export async function analyzeTranscript(
-  transcript: string,
-  dealName?: string,
-  company?: string,
-  participants?: string
-): Promise<AnalysisResponse> {
+export async function analyzeTranscript(opts: {
+  transcript: string;
+  deal_id?: string;
+  new_deal?: { deal_name: string; company: string };
+  participants?: string;
+}): Promise<AnalysisResponse> {
   const res = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      transcript,
-      deal_name: dealName || null,
-      company: company || null,
-      participants: participants || null,
-    }),
+    body: JSON.stringify(opts),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -150,37 +146,87 @@ export async function getActionPlan(analysisId: string): Promise<ActionPlan> {
 
 // Deals
 
-export interface DealListItem {
+export interface Deal {
   id: string;
-  deal_name: string | null;
-  company: string | null;
+  deal_name: string;
+  company: string;
+  stage?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  latest_call_score: number | null;
+  latest_medpicc_score: number | null;
+  latest_risk_assessment: string | null;
+  latest_deal_probability: number | null;
+  latest_medpicc_categories: Record<string, number>;
+  call_count: number;
+  analysis_ids: string[];
+}
+
+export interface CallAnalysisDetail {
+  id: string;
+  deal_id: string;
+  transcript: string;
+  labeled_transcript: string;
+  speaker_turns: SpeakerTurn[];
+  call_analysis: CallAnalysis;
+  medpicc: MEDPICCScoring;
   participants: string | null;
-  call_score: number | null;
-  medpicc_score: number | null;
-  risk_assessment: string | null;
-  deal_probability: number | null;
-  recommended_actions: string[] | null;
-  medpicc_categories: Record<string, number> | null;
-  open_questions: string[] | null;
-  key_mistakes: string[] | null;
-  created_at: string | null;
+  created_at: string;
 }
 
-export async function listDeals(): Promise<{ deals: DealListItem[] }> {
-  const res = await fetch(`${API_BASE}/analyses`);
-  if (!res.ok) return { deals: [] };
+export async function listDeals(): Promise<Deal[]> {
+  const res = await fetch(`${API_BASE}/deals`);
+  if (!res.ok) return [];
   const data = await res.json();
-  return { deals: data.analyses || [] };
+  return data.deals || [];
 }
 
-export async function getDeal(id: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${API_BASE}/analysis/${id}`);
+export async function createDeal(deal_name: string, company: string): Promise<Deal> {
+  const res = await fetch(`${API_BASE}/deals`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ deal_name, company }),
+  });
+  if (!res.ok) throw new Error("Failed to create deal");
+  return res.json();
+}
+
+export async function getDeal(id: string): Promise<Deal> {
+  const res = await fetch(`${API_BASE}/deals/${id}`);
   if (!res.ok) throw new Error("Deal not found");
   return res.json();
 }
 
+export async function updateDeal(id: string, data: Partial<Pick<Deal, "deal_name" | "company" | "stage" | "notes">>): Promise<Deal> {
+  const res = await fetch(`${API_BASE}/deals/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update deal");
+  return res.json();
+}
+
 export async function deleteDeal(id: string): Promise<void> {
+  await fetch(`${API_BASE}/deals/${id}`, { method: "DELETE" });
+}
+
+export async function getDealAnalyses(dealId: string): Promise<CallAnalysisDetail[]> {
+  const res = await fetch(`${API_BASE}/deals/${dealId}/analyses`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.analyses || [];
+}
+
+export async function deleteCallAnalysis(id: string): Promise<void> {
   await fetch(`${API_BASE}/analysis/${id}`, { method: "DELETE" });
+}
+
+export async function getCallAnalysis(id: string): Promise<CallAnalysisDetail> {
+  const res = await fetch(`${API_BASE}/analysis/${id}`);
+  if (!res.ok) throw new Error("Analysis not found");
+  return res.json();
 }
 
 // Granola

@@ -62,7 +62,11 @@ function AnalyzeContent() {
     setError(null);
     try {
       const participantsContext = contactsToContext(contacts);
-      const res = await analyzeTranscript(transcript, dealName, company, participantsContext);
+      const res = await analyzeTranscript({
+        transcript,
+        new_deal: { deal_name: dealName || "Untitled Deal", company: company || "" },
+        participants: participantsContext || undefined,
+      });
       setResult(res);
       setActiveTab("analysis");
     } catch (e: unknown) {

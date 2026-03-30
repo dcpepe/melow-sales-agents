@@ -7,11 +7,10 @@ import {
   MEDPICC_PROMPT,
   fillTemplate,
 } from "@/lib/server/prompts";
-import { saveAnalysis } from "@/lib/server/storage";
+import { saveAnalysis, saveDeal, addDealToIndex, addAnalysisToDeal } from "@/lib/server/storage";
 
 export const maxDuration = 120;
 
-// Check if transcript already has speaker labels (e.g. from Granola)
 function hasExistingLabels(transcript: string): boolean {
   const labelPattern = /^\[.+?\]:/m;
   return labelPattern.test(transcript);
@@ -20,7 +19,7 @@ function hasExistingLabels(transcript: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { transcript, deal_name, company, participants } = body;
+    const { transcript, deal_id, new_deal, participants } = body;
 
     if (!transcript || transcript.length < 50) {
       return NextResponse.json(
@@ -29,11 +28,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!deal_id && !new_deal) {
+      return NextResponse.json(
+        { error: "Either deal_id or new_deal is required" },
+        { status: 400 }
+      );
+    }
+
+    // Resolve deal_id — create deal if needed
+    let resolvedDealId = deal_id;
+    if (!resolvedDealId && new_deal) {
+      const newDealId = randomUUID();
+      const now = new Date().toISOString();
+      await saveDeal(newDealId, {
+        id: newDealId,
+        deal_name: new_deal.deal_name || "Untitled Deal",
+        company: new_deal.company || "",
+        created_at: now,
+        updated_at: now,
+        latest_call_score: null,
+        latest_medpicc_score: null,
+        latest_risk_assessment: null,
+        latest_deal_probability: null,
+        latest_medpicc_categories: {},
+        call_count: 0,
+        analysis_ids: [],
+      });
+      await addDealToIndex(newDealId);
+      resolvedDealId = newDealId;
+    }
+
+    // Speaker inference
     let labeledTranscript: string;
     let speakerTurns: { speaker: string; text: string }[];
 
     if (hasExistingLabels(transcript)) {
-      // Transcript already has labels (e.g. from Granola) — use as-is
       labeledTranscript = transcript;
       speakerTurns = transcript
         .split("\n")
@@ -44,7 +73,6 @@ export async function POST(req: NextRequest) {
           return { speaker: "Unknown", text: line };
         });
     } else {
-      // Run speaker inference using fast model
       const speakerPrompt = fillTemplate(SPEAKER_INFERENCE_PROMPT, { transcript });
       const result = await callClaude(speakerPrompt, true);
       speakerTurns = result as unknown as { speaker: string; text: string }[];
@@ -53,7 +81,6 @@ export async function POST(req: NextRequest) {
         .join("\n\n");
     }
 
-    // Append participant context if provided
     const contextForLLM = participants
       ? `${labeledTranscript}\n${participants}`
       : labeledTranscript;
@@ -64,13 +91,12 @@ export async function POST(req: NextRequest) {
       callClaude(fillTemplate(MEDPICC_PROMPT, { labeled_transcript: contextForLLM })),
     ]);
 
-    // Store results
+    // Save analysis with deal_id
     const analysisId = randomUUID();
     const analysisData = {
       id: analysisId,
+      deal_id: resolvedDealId,
       transcript,
-      deal_name: deal_name || null,
-      company: company || null,
       participants: participants || null,
       speaker_turns: speakerTurns,
       labeled_transcript: labeledTranscript,
@@ -80,8 +106,25 @@ export async function POST(req: NextRequest) {
     };
     await saveAnalysis(analysisId, analysisData);
 
+    // Link analysis to deal and update cached scores
+    const medpiccData = medpicc as Record<string, unknown>;
+    const medpiccCategories: Record<string, number> = {};
+    for (const key of ["metrics", "economic_buyer", "decision_criteria", "decision_process", "paper_process", "identify_pain", "champion", "competition"]) {
+      const cat = medpiccData[key] as Record<string, unknown> | undefined;
+      if (cat) medpiccCategories[key] = cat.score as number;
+    }
+
+    await addAnalysisToDeal(resolvedDealId, analysisId, {
+      call_score: (callAnalysis as Record<string, unknown>).call_score as number,
+      medpicc_score: medpiccData.overall_score as number,
+      risk_assessment: medpiccData.risk_assessment as string,
+      deal_probability: medpiccData.deal_probability as number,
+      medpicc_categories: medpiccCategories,
+    });
+
     return NextResponse.json({
       id: analysisId,
+      deal_id: resolvedDealId,
       speaker_turns: speakerTurns,
       call_analysis: callAnalysis,
       medpicc,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DealListItem, listDeals, deleteDeal } from "@/lib/api";
+import { Deal, listDeals, deleteDeal } from "@/lib/api";
 
 type Filter = "all" | "high" | "medium" | "low";
 
@@ -19,7 +19,7 @@ const MEDPICC_LABELS: Record<string, string> = {
 
 export default function DealsPage() {
   const router = useRouter();
-  const [deals, setDeals] = useState<DealListItem[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -27,7 +27,7 @@ export default function DealsPage() {
 
   useEffect(() => {
     listDeals()
-      .then((data) => setDeals(data.deals))
+      .then((data) => setDeals(data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -42,9 +42,9 @@ export default function DealsPage() {
   // Filtering
   const filtered = deals
     .filter((d) => {
-      if (filter === "high") return d.risk_assessment === "High";
-      if (filter === "medium") return d.risk_assessment === "Medium";
-      if (filter === "low") return d.risk_assessment === "Low";
+      if (filter === "high") return d.latest_risk_assessment === "High";
+      if (filter === "medium") return d.latest_risk_assessment === "Medium";
+      if (filter === "low") return d.latest_risk_assessment === "Low";
       return true;
     })
     .filter((d) => {
@@ -57,24 +57,24 @@ export default function DealsPage() {
     });
 
   // Pipeline stats
-  const highRisk = deals.filter((d) => d.risk_assessment === "High").length;
-  const medRisk = deals.filter((d) => d.risk_assessment === "Medium").length;
-  const lowRisk = deals.filter((d) => d.risk_assessment === "Low").length;
+  const highRisk = deals.filter((d) => d.latest_risk_assessment === "High").length;
+  const medRisk = deals.filter((d) => d.latest_risk_assessment === "Medium").length;
+  const lowRisk = deals.filter((d) => d.latest_risk_assessment === "Low").length;
   const avgCallScore = deals.length
-    ? Math.round(deals.reduce((s, d) => s + (d.call_score || 0), 0) / deals.length)
+    ? Math.round(deals.reduce((s, d) => s + (d.latest_call_score || 0), 0) / deals.length)
     : 0;
   const avgMedpicc = deals.length
-    ? Math.round(deals.reduce((s, d) => s + (d.medpicc_score || 0), 0) / deals.length)
+    ? Math.round(deals.reduce((s, d) => s + (d.latest_medpicc_score || 0), 0) / deals.length)
     : 0;
   const avgWinProb = deals.length
-    ? Math.round(deals.reduce((s, d) => s + (d.deal_probability || 0), 0) / deals.length)
+    ? Math.round(deals.reduce((s, d) => s + (d.latest_deal_probability || 0), 0) / deals.length)
     : 0;
 
   // Find weakest MEDPICC categories across all deals
   const categoryTotals: Record<string, { sum: number; count: number }> = {};
   for (const deal of deals) {
-    if (!deal.medpicc_categories) continue;
-    for (const [key, score] of Object.entries(deal.medpicc_categories)) {
+    if (!deal.latest_medpicc_categories) continue;
+    for (const [key, score] of Object.entries(deal.latest_medpicc_categories)) {
       if (!categoryTotals[key]) categoryTotals[key] = { sum: 0, count: 0 };
       categoryTotals[key].sum += score;
       categoryTotals[key].count++;
@@ -85,14 +85,7 @@ export default function DealsPage() {
     .sort((a, b) => a.avg - b.avg)
     .slice(0, 4);
 
-  // Collect open questions across deals
   const allOpenQuestions: { deal: string; question: string }[] = [];
-  for (const deal of deals) {
-    if (!deal.open_questions) continue;
-    for (const q of deal.open_questions.slice(0, 2)) {
-      allOpenQuestions.push({ deal: deal.deal_name || deal.company || "Untitled", question: q });
-    }
-  }
 
   function scoreColor(score: number | null) {
     if (score === null) return "text-gray-400";
@@ -301,7 +294,7 @@ export default function DealsPage() {
                         <h3 className="font-semibold text-gray-900 truncate">
                           {deal.deal_name || "Untitled Deal"}
                         </h3>
-                        {riskBadge(deal.risk_assessment)}
+                        {riskBadge(deal.latest_risk_assessment)}
                       </div>
                       {deal.company && (
                         <p className="text-sm text-gray-500 truncate">{deal.company}</p>
@@ -310,26 +303,26 @@ export default function DealsPage() {
 
                     {/* MEDPICC mini bar */}
                     <div className="hidden md:block">
-                      {medpiccBar(deal.medpicc_categories)}
+                      {medpiccBar(deal.latest_medpicc_categories)}
                     </div>
 
                     {/* Scores */}
                     <div className="flex items-center gap-5">
                       <div className="text-center">
-                        <p className={`text-lg font-bold ${scoreColor(deal.call_score)}`}>
-                          {deal.call_score ?? "—"}
+                        <p className={`text-lg font-bold ${scoreColor(deal.latest_call_score)}`}>
+                          {deal.latest_call_score ?? "—"}
                         </p>
                         <p className="text-[10px] text-gray-400 uppercase">Call</p>
                       </div>
                       <div className="text-center">
-                        <p className={`text-lg font-bold ${scoreColor(deal.medpicc_score)}`}>
-                          {deal.medpicc_score != null ? `${Math.round(deal.medpicc_score)}%` : "—"}
+                        <p className={`text-lg font-bold ${scoreColor(deal.latest_medpicc_score)}`}>
+                          {deal.latest_medpicc_score != null ? `${Math.round(deal.latest_medpicc_score)}%` : "—"}
                         </p>
                         <p className="text-[10px] text-gray-400 uppercase">MEDPICC</p>
                       </div>
                       <div className="text-center">
-                        <p className={`text-lg font-bold ${scoreColor(deal.deal_probability)}`}>
-                          {deal.deal_probability != null ? `${Math.round(deal.deal_probability)}%` : "—"}
+                        <p className={`text-lg font-bold ${scoreColor(deal.latest_deal_probability)}`}>
+                          {deal.latest_deal_probability != null ? `${Math.round(deal.latest_deal_probability)}%` : "—"}
                         </p>
                         <p className="text-[10px] text-gray-400 uppercase">Win</p>
                       </div>
@@ -367,11 +360,11 @@ export default function DealsPage() {
                     <div className="border-t px-5 py-4 bg-gray-50/50 space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* What's Missing */}
-                        {deal.medpicc_categories && (
+                        {deal.latest_medpicc_categories && (
                           <div>
                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">MEDPICC Gaps</h4>
                             <div className="space-y-1.5">
-                              {Object.entries(deal.medpicc_categories)
+                              {Object.entries(deal.latest_medpicc_categories)
                                 .filter(([, score]) => score <= 2)
                                 .sort(([, a], [, b]) => a - b)
                                 .map(([key, score]) => (
@@ -382,40 +375,24 @@ export default function DealsPage() {
                                     <span className="text-sm text-gray-700">{MEDPICC_LABELS[key]}</span>
                                   </div>
                                 ))}
-                              {Object.entries(deal.medpicc_categories).filter(([, s]) => s <= 2).length === 0 && (
+                              {Object.entries(deal.latest_medpicc_categories).filter(([, s]) => s <= 2).length === 0 && (
                                 <p className="text-sm text-green-600">All categories scored 3+</p>
                               )}
                             </div>
                           </div>
                         )}
 
-                        {/* Open Questions */}
-                        {deal.open_questions && deal.open_questions.length > 0 && (
-                          <div>
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Still Unknown</h4>
-                            <ul className="space-y-1">
-                              {deal.open_questions.slice(0, 4).map((q, i) => (
-                                <li key={i} className="text-sm text-gray-700 flex gap-2">
-                                  <span className="text-red-400 flex-shrink-0">?</span>
-                                  {q}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                        {/* Call Count */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Calls</h4>
+                          <p className="text-sm text-gray-700">{deal.call_count} call{deal.call_count !== 1 ? "s" : ""} analyzed</p>
+                        </div>
                       </div>
 
-                      {/* Recommended Actions */}
-                      {deal.recommended_actions && deal.recommended_actions.length > 0 && (
+                      {/* Created */}
+                      {deal.created_at && (
                         <div>
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Next Actions</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {deal.recommended_actions.slice(0, 4).map((action, i) => (
-                              <span key={i} className="bg-white border rounded-lg px-3 py-1.5 text-sm text-gray-700">
-                                {action}
-                              </span>
-                            ))}
-                          </div>
+                          <p className="text-xs text-gray-400">Created {new Date(deal.created_at).toLocaleDateString()}</p>
                         </div>
                       )}
 

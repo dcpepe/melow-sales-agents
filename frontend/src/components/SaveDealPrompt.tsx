@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DealListItem, listDeals } from "@/lib/api";
+import { Deal, listDeals } from "@/lib/api";
 
 interface SaveDealPromptProps {
   dealName: string;
@@ -16,12 +16,12 @@ export default function SaveDealPrompt({
   onSaveNew,
   onDismiss,
 }: SaveDealPromptProps) {
-  const [existingDeals, setExistingDeals] = useState<DealListItem[]>([]);
+  const [existingDeals, setExistingDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     listDeals()
-      .then((data) => setExistingDeals(data.deals))
+      .then((data) => setExistingDeals(data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -73,8 +73,8 @@ export default function SaveDealPrompt({
                 className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors"
               >
                 {deal.deal_name || deal.company || "Untitled"}
-                {deal.call_score != null && (
-                  <span className="text-xs text-gray-400 ml-1">({deal.call_score})</span>
+                {deal.latest_call_score != null && (
+                  <span className="text-xs text-gray-400 ml-1">({deal.latest_call_score})</span>
                 )}
               </button>
             ))}

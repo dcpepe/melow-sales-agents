@@ -2,20 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { listGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem } from "@/lib/api";
-
-interface RecentAnalysis {
-  id: string;
-  deal_name: string | null;
-  company: string | null;
-  call_score: number | null;
-  medpicc_score: number | null;
-  risk_assessment: string | null;
-}
+import { listGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
+  const [recentDeals, setRecentDeals] = useState<Deal[]>([]);
   const [granolaNotes, setGranolaNotes] = useState<GranolaNoteListItem[]>([]);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
   const [loadingNotes, setLoadingNotes] = useState(true);
@@ -26,9 +17,8 @@ export default function Dashboard() {
   const [noteSearch, setNoteSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/analyses")
-      .then((r) => r.json())
-      .then((data) => setRecentAnalyses(data.analyses || []))
+    listDeals()
+      .then((data) => setRecentDeals(data))
       .catch(() => {})
       .finally(() => setLoadingAnalyses(false));
 
@@ -168,11 +158,11 @@ export default function Dashboard() {
               </svg>
             </div>
             <h3 className="font-semibold text-white">
-              {recentAnalyses.length} {recentAnalyses.length === 1 ? "Analysis" : "Analyses"}
+              {recentDeals.length} {recentDeals.length === 1 ? "Analysis" : "Analyses"}
             </h3>
             <p className="text-sm text-gray-300 mt-1">
-              {recentAnalyses.length > 0
-                ? `Avg call score: ${Math.round(recentAnalyses.reduce((sum, a) => sum + (a.call_score || 0), 0) / recentAnalyses.length)}`
+              {recentDeals.length > 0
+                ? `Avg call score: ${Math.round(recentDeals.reduce((sum, a) => sum + (a.latest_call_score || 0), 0) / recentDeals.length)}`
                 : "No analyses yet"}
             </p>
           </div>
@@ -187,7 +177,7 @@ export default function Dashboard() {
             <div className="divide-y">
               {loadingAnalyses ? (
                 <div className="px-5 py-8 text-center text-sm text-gray-400">Loading...</div>
-              ) : recentAnalyses.length === 0 ? (
+              ) : recentDeals.length === 0 ? (
                 <div className="px-5 py-8 text-center">
                   <p className="text-sm text-gray-400 mb-3">No analyses yet</p>
                   <button
@@ -198,34 +188,34 @@ export default function Dashboard() {
                   </button>
                 </div>
               ) : (
-                recentAnalyses.map((analysis) => (
+                recentDeals.map((deal) => (
                   <button
-                    key={analysis.id}
-                    onClick={() => router.push(`/analyze?id=${analysis.id}`)}
+                    key={deal.id}
+                    onClick={() => router.push(`/deals/${deal.id}`)}
                     className="w-full px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {analysis.deal_name || analysis.company || "Untitled Analysis"}
+                        {deal.deal_name || deal.company || "Untitled Deal"}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {analysis.company && analysis.deal_name ? analysis.company : ""}
+                        {deal.company} {deal.call_count > 0 ? `· ${deal.call_count} call${deal.call_count !== 1 ? "s" : ""}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 ml-4">
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${scoreColor(analysis.call_score)}`}>
-                          {analysis.call_score ?? "—"}
+                        <p className={`text-sm font-bold ${scoreColor(deal.latest_call_score)}`}>
+                          {deal.latest_call_score ?? "—"}
                         </p>
                         <p className="text-xs text-gray-400">Call</p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${scoreColor(analysis.medpicc_score)}`}>
-                          {analysis.medpicc_score !== null ? `${Math.round(analysis.medpicc_score)}%` : "—"}
+                        <p className={`text-sm font-bold ${scoreColor(deal.latest_medpicc_score)}`}>
+                          {deal.latest_medpicc_score !== null ? `${Math.round(deal.latest_medpicc_score)}%` : "—"}
                         </p>
                         <p className="text-xs text-gray-400">MEDPICC</p>
                       </div>
-                      {riskBadge(analysis.risk_assessment)}
+                      {riskBadge(deal.latest_risk_assessment)}
                     </div>
                   </button>
                 ))

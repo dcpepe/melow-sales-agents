@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getDeal, AnalysisResponse } from "@/lib/api";
+import { getCallAnalysis, AnalysisResponse } from "@/lib/api";
 import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import ActionPlanTab from "@/components/ActionPlanTab";
@@ -16,22 +16,18 @@ export default function DealDetailPage() {
   const router = useRouter();
   const id = params.id as string;
   const [data, setData] = useState<AnalysisResponse | null>(null);
-  const [meta, setMeta] = useState<{ deal_name?: string; company?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("analysis");
 
   useEffect(() => {
-    getDeal(id)
+    getCallAnalysis(id)
       .then((raw) => {
         setData({
-          id: raw.id as string,
-          speaker_turns: raw.speaker_turns as AnalysisResponse["speaker_turns"],
-          call_analysis: raw.call_analysis as AnalysisResponse["call_analysis"],
-          medpicc: raw.medpicc as AnalysisResponse["medpicc"],
-        });
-        setMeta({
-          deal_name: raw.deal_name as string | undefined,
-          company: raw.company as string | undefined,
+          id: raw.id,
+          deal_id: raw.deal_id || id,
+          speaker_turns: raw.speaker_turns,
+          call_analysis: raw.call_analysis,
+          medpicc: raw.medpicc,
         });
       })
       .catch(() => setError("Deal not found"));
@@ -75,12 +71,8 @@ export default function DealDetailPage() {
             </svg>
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              {meta?.deal_name || meta?.company || "Deal Analysis"}
-            </h1>
-            {meta?.company && meta?.deal_name && (
-              <p className="text-sm text-gray-500">{meta.company}</p>
-            )}
+            <h1 className="text-xl font-bold text-gray-900">Deal Analysis</h1>
+            <p className="text-sm text-gray-500">Call detail view</p>
           </div>
         </div>
       </header>

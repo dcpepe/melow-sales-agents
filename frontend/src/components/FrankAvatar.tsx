@@ -9,10 +9,9 @@ export default function FrankAvatar({ size = "md" }: { size?: "sm" | "md" | "lg"
 
   return (
     <div className={`${sizes[size]} bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30 relative`}>
-      <span className="relative" style={{ lineHeight: 1 }}>&#128526;</span>
-      {/* Cash bags */}
-      <span className="absolute -bottom-1 -left-1 text-xs" style={{ lineHeight: 1 }}>&#128176;</span>
-      <span className="absolute -bottom-1 -right-1 text-xs" style={{ lineHeight: 1 }}>&#128176;</span>
+      <span className="relative" style={{ lineHeight: 1 }}>😎</span>
+      <span className="absolute -bottom-1 -left-1 text-xs" style={{ lineHeight: 1 }}>💰</span>
+      <span className="absolute -bottom-1 -right-1 text-xs" style={{ lineHeight: 1 }}>💰</span>
     </div>
   );
 }

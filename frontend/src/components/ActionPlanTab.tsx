@@ -44,14 +44,14 @@ function DemonLoader() {
             opacity: 0.4,
           }}
         >
-          {["&#128520;", "&#128293;", "&#9876;&#65039;", "&#127919;", "&#128165;", "&#9889;"][i % 6]}
+          {["😈", "🔥", "⚔️", "🎯", "💥", "⚡"][i % 6]}
         </div>
       ))}
 
       {/* Center content */}
       <div className="relative z-10 text-center">
         <div className="text-8xl mb-6 animate-bounce" style={{ animationDuration: "1.5s" }}>
-          <span dangerouslySetInnerHTML={{ __html: "&#128520;" }} />
+          😈
         </div>
         <h2 className="text-2xl font-bold text-white mb-2">Summoning Sales Demon</h2>
         <div className="bg-red-900/50 backdrop-blur-sm border border-red-800 px-6 py-3 rounded-xl inline-block">
@@ -109,7 +109,7 @@ export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: str
           }} />
         </div>
         <div className="relative z-10">
-          <div className="text-6xl mb-4"><span dangerouslySetInnerHTML={{ __html: "&#128520;" }} /></div>
+          <div className="text-6xl mb-4">😈</div>
           <h3 className="text-2xl font-bold text-white mb-3">Sales Demon Mode</h3>
           <p className="text-red-200 text-sm mb-8 max-w-lg mx-auto leading-relaxed">
             Generate a ruthless, no-BS action plan that closes every MEDPICC gap.
@@ -133,14 +133,14 @@ export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: str
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-red-950 rounded-xl p-5 border border-red-900">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg" dangerouslySetInnerHTML={{ __html: "&#128680;" }} />
+            <span className="text-lg">🚨</span>
             <h3 className="font-bold text-red-400 text-sm uppercase tracking-wider">Deal Killer</h3>
           </div>
           <p className="text-white text-sm leading-relaxed">{plan.deal_killer}</p>
         </div>
         <div className="bg-emerald-950 rounded-xl p-5 border border-emerald-900">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg" dangerouslySetInnerHTML={{ __html: "&#9889;" }} />
+            <span className="text-lg">⚡</span>
             <h3 className="font-bold text-emerald-400 text-sm uppercase tracking-wider">Power Move</h3>
           </div>
           <p className="text-white text-sm leading-relaxed">{plan.power_move}</p>
@@ -189,7 +189,7 @@ export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: str
       {/* Email Draft */}
       <div className="bg-white rounded-xl border shadow-sm p-5">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg" dangerouslySetInnerHTML={{ __html: "&#9993;&#65039;" }} />
+          <span className="text-lg">✉️</span>
           <h3 className="font-semibold text-gray-900">Follow-Up Email Draft</h3>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 border">

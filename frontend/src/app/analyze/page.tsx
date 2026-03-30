@@ -10,6 +10,7 @@ import GranolaNotesList from "@/components/GranolaNotesList";
 import ContactsInput, { Contact, contactsToContext } from "@/components/ContactsInput";
 import SaveDealPrompt from "@/components/SaveDealPrompt";
 import MoneyLoader from "@/components/MoneyLoader";
+import ChatSidebar from "@/components/ChatSidebar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -199,6 +200,8 @@ function AnalyzeContent() {
             {activeTab === "dealroom" && <DealRoomTab analysisId={result.id} />}
           </div>
         )}
+
+        {result && <ChatSidebar analysisId={result.id} />}
       </main>
     </div>
   );

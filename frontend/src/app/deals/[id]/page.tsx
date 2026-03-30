@@ -7,6 +7,7 @@ import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import ActionPlanTab from "@/components/ActionPlanTab";
 import DealRoomTab from "@/components/DealRoomTab";
+import ChatSidebar from "@/components/ChatSidebar";
 
 type Tab = "analysis" | "medpicc" | "actions" | "dealroom";
 
@@ -105,6 +106,8 @@ export default function DealDetailPage() {
         {activeTab === "medpicc" && <MEDPICCTab data={data.medpicc} />}
         {activeTab === "actions" && <ActionPlanTab analysisId={data.id} />}
         {activeTab === "dealroom" && <DealRoomTab analysisId={data.id} />}
+
+        <ChatSidebar analysisId={data.id} />
       </main>
     </div>
   );

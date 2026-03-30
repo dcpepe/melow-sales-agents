@@ -7,6 +7,7 @@ import MEDPICCTab from "@/components/MEDPICCTab";
 import DealRoomTab from "@/components/DealRoomTab";
 import ActionPlanTab from "@/components/ActionPlanTab";
 import GranolaNotesList from "@/components/GranolaNotesList";
+import ContactsInput, { Contact, contactsToContext } from "@/components/ContactsInput";
 import MoneyLoader from "@/components/MoneyLoader";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -19,7 +20,7 @@ function AnalyzeContent() {
   const [transcript, setTranscript] = useState("");
   const [dealName, setDealName] = useState("");
   const [company, setCompany] = useState("");
-  const [participants, setParticipants] = useState("");
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
   useEffect(() => {
     if (searchParams.get("from") === "granola") {
@@ -27,7 +28,17 @@ function AnalyzeContent() {
         const data = JSON.parse(sessionStorage.getItem("granola_import") || "{}");
         if (data.transcript) setTranscript(data.transcript);
         if (data.deal) setDealName(data.deal);
-        if (data.participants) setParticipants(data.participants);
+        if (data.participants) {
+          // Auto-create contact entries from Granola participant names
+          const names = (data.participants as string).split(", ").filter(Boolean);
+          setContacts(names.map((name: string) => ({
+            name,
+            email: "",
+            role: "",
+            company: "",
+            side: "prospect" as const,
+          })));
+        }
         sessionStorage.removeItem("granola_import");
       } catch {
         // ignore
@@ -47,7 +58,8 @@ function AnalyzeContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await analyzeTranscript(transcript, dealName, company, participants);
+      const participantsContext = contactsToContext(contacts);
+      const res = await analyzeTranscript(transcript, dealName, company, participantsContext);
       setResult(res);
       setActiveTab("analysis");
     } catch (e: unknown) {
@@ -92,13 +104,22 @@ function AnalyzeContent() {
             onSelect={(t, title, p) => {
               setTranscript(t);
               setDealName(title);
-              setParticipants(p);
+              if (p) {
+                const names = p.split(", ").filter(Boolean);
+                setContacts(names.map((name) => ({
+                  name,
+                  email: "",
+                  role: "",
+                  company: "",
+                  side: "prospect" as const,
+                })));
+              }
             }}
           />
 
           <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
             <h3 className="font-semibold text-gray-900">Or paste a transcript</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="Deal Name (optional)"
@@ -113,14 +134,8 @@ function AnalyzeContent() {
                 onChange={(e) => setCompany(e.target.value)}
                 className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
-              <input
-                type="text"
-                placeholder="Participants (optional)"
-                value={participants}
-                onChange={(e) => setParticipants(e.target.value)}
-                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-              />
             </div>
+            <ContactsInput contacts={contacts} onChange={setContacts} />
             <textarea
               rows={12}
               placeholder="Paste your sales call transcript here..."

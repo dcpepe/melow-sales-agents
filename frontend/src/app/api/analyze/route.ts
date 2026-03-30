@@ -53,10 +53,15 @@ export async function POST(req: NextRequest) {
         .join("\n\n");
     }
 
+    // Append participant context if provided
+    const contextForLLM = participants
+      ? `${labeledTranscript}\n${participants}`
+      : labeledTranscript;
+
     // Run call analysis and MEDPICC in parallel
     const [callAnalysis, medpicc] = await Promise.all([
-      callClaude(fillTemplate(CALL_ANALYSIS_PROMPT, { labeled_transcript: labeledTranscript })),
-      callClaude(fillTemplate(MEDPICC_PROMPT, { labeled_transcript: labeledTranscript })),
+      callClaude(fillTemplate(CALL_ANALYSIS_PROMPT, { labeled_transcript: contextForLLM })),
+      callClaude(fillTemplate(MEDPICC_PROMPT, { labeled_transcript: contextForLLM })),
     ]);
 
     // Store results

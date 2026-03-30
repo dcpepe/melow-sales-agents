@@ -5,7 +5,7 @@ import { analyzeTranscript, AnalysisResponse } from "@/lib/api";
 import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import DealRoomTab from "@/components/DealRoomTab";
-import GranolaPicker from "@/components/GranolaPicker";
+import GranolaNotesList from "@/components/GranolaNotesList";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -68,14 +68,17 @@ function AnalyzeContent() {
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         {!result && (
+          <div className="space-y-6">
+          <GranolaNotesList
+            onSelect={(t, title, p) => {
+              setTranscript(t);
+              setDealName(title);
+              setParticipants(p);
+            }}
+          />
+
           <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-            <GranolaPicker
-              onSelect={(t, title, p) => {
-                setTranscript(t);
-                setDealName(title);
-                setParticipants(p);
-              }}
-            />
+            <h3 className="font-semibold text-gray-900">Or paste a transcript</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input
                 type="text"
@@ -114,6 +117,7 @@ function AnalyzeContent() {
             >
               {loading ? "Analyzing..." : "Analyze Call"}
             </button>
+          </div>
           </div>
         )}
 

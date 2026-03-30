@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [hasMoreNotes, setHasMoreNotes] = useState(false);
   const [notesCursor, setNotesCursor] = useState<string | undefined>();
   const [importingNote, setImportingNote] = useState<string | null>(null);
+  const [noteSearch, setNoteSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/analyses")
@@ -226,20 +227,56 @@ export default function Dashboard() {
 
           {/* Granola Notes */}
           <div className="bg-white rounded-xl border shadow-sm">
-            <div className="px-5 py-4 border-b flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Granola Meetings</h2>
-              <span className="text-xs text-gray-400">{granolaNotes.length} loaded</span>
+            <div className="px-5 py-4 border-b">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-gray-900">Granola Meetings</h2>
+                <span className="text-xs text-gray-400">{granolaNotes.length} loaded</span>
+              </div>
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search meetings..."
+                  value={noteSearch}
+                  onChange={(e) => setNoteSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 placeholder:text-gray-400"
+                />
+                {noteSearch && (
+                  <button
+                    onClick={() => setNoteSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
+            {(() => {
+              const filtered = noteSearch
+                ? granolaNotes.filter((n) =>
+                    n.title.toLowerCase().includes(noteSearch.toLowerCase()) ||
+                    (n.owner?.name || "").toLowerCase().includes(noteSearch.toLowerCase())
+                  )
+                : granolaNotes;
+              return (
             <div className="divide-y max-h-[500px] overflow-y-auto">
               {loadingNotes ? (
                 <div className="px-5 py-8 text-center text-sm text-gray-400">Loading...</div>
-              ) : granolaNotes.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <div className="px-5 py-8 text-center">
-                  <p className="text-sm text-gray-400">No Granola notes found</p>
-                  <p className="text-xs text-gray-300 mt-1">Check your GRANOLA_API_KEY</p>
+                  <p className="text-sm text-gray-400">
+                    {granolaNotes.length === 0 ? "No Granola notes found" : "No matching meetings"}
+                  </p>
+                  {granolaNotes.length === 0 && (
+                    <p className="text-xs text-gray-300 mt-1">Check your GRANOLA_API_KEY</p>
+                  )}
                 </div>
               ) : (
-                granolaNotes.map((note) => (
+                filtered.map((note) => (
                   <button
                     key={note.id}
                     onClick={() => handleImportNote(note.id)}
@@ -262,6 +299,8 @@ export default function Dashboard() {
                 ))
               )}
             </div>
+              );
+            })()}
             {hasMoreNotes && (
               <div className="px-5 py-3 border-t">
                 <button

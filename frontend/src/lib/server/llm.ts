@@ -5,10 +5,11 @@ const client = new Anthropic({
 });
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-20250514";
+const FAST_MODEL = "claude-haiku-4-5-20251001";
 
-export async function callClaude(prompt: string): Promise<Record<string, unknown>> {
+export async function callClaude(prompt: string, fast = false): Promise<Record<string, unknown>> {
   const message = await client.messages.create({
-    model: MODEL,
+    model: fast ? FAST_MODEL : MODEL,
     max_tokens: 4096,
     messages: [{ role: "user", content: prompt }],
   });

@@ -87,7 +87,10 @@ export async function analyzeTranscript(
       participants: participants || null,
     }),
   });
-  if (!res.ok) throw new Error(`Analysis failed: ${res.statusText}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || `Analysis failed: ${res.statusText}`);
+  }
   return res.json();
 }
 

@@ -9,7 +9,13 @@ import {
 } from "@/lib/server/prompts";
 import { saveAnalysis } from "@/lib/server/storage";
 
-export const maxDuration = 120; // allow up to 2 min for LLM calls
+export const maxDuration = 120;
+
+// Check if transcript already has speaker labels (e.g. from Granola)
+function hasExistingLabels(transcript: string): boolean {
+  const labelPattern = /^\[.+?\]:/m;
+  return labelPattern.test(transcript);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,24 +29,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Step 1: Speaker inference
-    const speakerPrompt = fillTemplate(SPEAKER_INFERENCE_PROMPT, { transcript });
-    const speakerTurns = (await callClaude(speakerPrompt)) as unknown as {
-      speaker: string;
-      text: string;
-    }[];
+    let labeledTranscript: string;
+    let speakerTurns: { speaker: string; text: string }[];
 
-    const labeledTranscript = speakerTurns
-      .map((t) => `[${t.speaker}]: ${t.text}`)
-      .join("\n\n");
+    if (hasExistingLabels(transcript)) {
+      // Transcript already has labels (e.g. from Granola) — use as-is
+      labeledTranscript = transcript;
+      speakerTurns = transcript
+        .split("\n")
+        .filter((line: string) => line.trim())
+        .map((line: string) => {
+          const match = line.match(/^\[(.+?)\]:\s*(.*)$/);
+          if (match) return { speaker: match[1], text: match[2] };
+          return { speaker: "Unknown", text: line };
+        });
+    } else {
+      // Run speaker inference using fast model
+      const speakerPrompt = fillTemplate(SPEAKER_INFERENCE_PROMPT, { transcript });
+      const result = await callClaude(speakerPrompt, true);
+      speakerTurns = result as unknown as { speaker: string; text: string }[];
+      labeledTranscript = speakerTurns
+        .map((t) => `[${t.speaker}]: ${t.text}`)
+        .join("\n\n");
+    }
 
-    // Step 2: Run call analysis and MEDPICC in parallel
+    // Run call analysis and MEDPICC in parallel
     const [callAnalysis, medpicc] = await Promise.all([
       callClaude(fillTemplate(CALL_ANALYSIS_PROMPT, { labeled_transcript: labeledTranscript })),
       callClaude(fillTemplate(MEDPICC_PROMPT, { labeled_transcript: labeledTranscript })),
     ]);
 
-    // Step 3: Store results
+    // Store results
     const analysisId = randomUUID();
     const analysisData = {
       id: analysisId,
@@ -63,8 +82,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Analysis error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Analysis failed. Check server logs." },
+      { error: `Analysis failed: ${message}` },
       { status: 500 }
     );
   }

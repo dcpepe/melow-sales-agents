@@ -5,6 +5,7 @@ import { analyzeTranscript, AnalysisResponse } from "@/lib/api";
 import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import DealRoomTab from "@/components/DealRoomTab";
+import GranolaPicker from "@/components/GranolaPicker";
 
 type Tab = "analysis" | "medpicc" | "dealroom";
 
@@ -56,6 +57,13 @@ export default function Home() {
         {/* Input Section */}
         {!result && (
           <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+            <GranolaPicker
+              onSelect={(t, title, p) => {
+                setTranscript(t);
+                setDealName(title);
+                setParticipants(p);
+              }}
+            />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input
                 type="text"

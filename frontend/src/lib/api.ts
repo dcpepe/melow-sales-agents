@@ -106,3 +106,40 @@ export async function getDealRoom(id: string): Promise<DealRoom> {
   if (!res.ok) throw new Error(`Deal room not found`);
   return res.json();
 }
+
+// Granola
+
+export interface GranolaNoteListItem {
+  id: string;
+  title: string;
+  owner?: { name: string; email: string };
+  created_at?: string;
+}
+
+export interface GranolaNoteDetail {
+  id: string;
+  title: string;
+  owner?: { name: string; email: string };
+  summary?: string;
+  transcript?: { speaker: { source: string; name?: string }; text: string }[];
+  participants?: { name: string; email?: string }[];
+  created_at?: string;
+}
+
+export async function listGranolaNotes(createdAfter?: string): Promise<{
+  notes: GranolaNoteListItem[];
+  hasMore: boolean;
+  cursor?: string;
+}> {
+  const params = new URLSearchParams();
+  if (createdAfter) params.set("created_after", createdAfter);
+  const res = await fetch(`${API_BASE}/granola/notes?${params}`);
+  if (!res.ok) throw new Error("Failed to fetch Granola notes");
+  return res.json();
+}
+
+export async function getGranolaNoteDetail(id: string): Promise<GranolaNoteDetail> {
+  const res = await fetch(`${API_BASE}/granola/notes/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch note");
+  return res.json();
+}

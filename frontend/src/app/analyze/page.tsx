@@ -6,6 +6,7 @@ import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import DealRoomTab from "@/components/DealRoomTab";
 import GranolaNotesList from "@/components/GranolaNotesList";
+import MoneyLoader from "@/components/MoneyLoader";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -65,6 +66,8 @@ function AnalyzeContent() {
           </div>
         </div>
       </header>
+
+      {loading && <MoneyLoader />}
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         {!result && (

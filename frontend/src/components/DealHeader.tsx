@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Deal, updateDeal } from "@/lib/api";
+import { TEAM_MEMBERS, getMemberByName } from "@/lib/team";
 
 const STAGES = ["Discovery", "Qualification", "Demo", "Proposal", "Negotiation", "Closed Won", "Closed Lost"];
 
@@ -17,6 +18,7 @@ export default function DealHeader({
   const [company, setCompany] = useState(deal.company);
   const [stage, setStage] = useState(deal.stage || "");
   const [notes, setNotes] = useState(deal.notes || "");
+  const [assignedTo, setAssignedTo] = useState(deal.assigned_to || "");
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -27,6 +29,7 @@ export default function DealHeader({
         company,
         stage: stage || undefined,
         notes: notes || undefined,
+        assigned_to: assignedTo || undefined,
       });
       onUpdate(updated);
       setEditing(false);
@@ -63,6 +66,30 @@ export default function DealHeader({
                 <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{deal.stage}</span>
               </>
             )}
+            {deal.owner && (() => {
+              const m = getMemberByName(deal.owner);
+              return m ? (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <div className="flex items-center gap-1">
+                    <div className={`w-5 h-5 ${m.color} rounded-full flex items-center justify-center text-white text-[8px] font-bold`}>{m.initials}</div>
+                    <span className="text-xs text-gray-500">{m.name.split(" ")[0]}</span>
+                  </div>
+                </>
+              ) : null;
+            })()}
+            {deal.assigned_to && deal.assigned_to !== deal.owner && (() => {
+              const m = getMemberByName(deal.assigned_to);
+              return m ? (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <div className="flex items-center gap-1">
+                    <div className={`w-5 h-5 ${m.color} rounded-full flex items-center justify-center text-white text-[8px] font-bold`}>{m.initials}</div>
+                    <span className="text-xs text-gray-400">assigned</span>
+                  </div>
+                </>
+              ) : null;
+            })()}
           </div>
           {deal.notes && (
             <p className="text-sm text-gray-400 mt-1 truncate max-w-xl">{deal.notes}</p>
@@ -123,6 +150,26 @@ export default function DealHeader({
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
         />
       </div>
+      <div>
+        <label className="text-xs font-medium text-gray-500 mb-1 block">Assigned To</label>
+        <div className="flex gap-2">
+          {TEAM_MEMBERS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setAssignedTo(assignedTo === m.name ? "" : m.name)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                assignedTo === m.name
+                  ? `${m.color} text-white`
+                  : "bg-white border text-gray-600 hover:border-gray-400"
+              }`}
+            >
+              <span>{m.initials}</span>
+              <span>{m.name.split(" ")[0]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="flex gap-2">
         <button
           onClick={handleSave}
@@ -137,6 +184,7 @@ export default function DealHeader({
             setCompany(deal.company);
             setStage(deal.stage || "");
             setNotes(deal.notes || "");
+            setAssignedTo(deal.assigned_to || "");
             setEditing(false);
           }}
           className="border text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"

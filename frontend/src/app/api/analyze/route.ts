@@ -19,7 +19,7 @@ function hasExistingLabels(transcript: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { transcript, deal_id, new_deal, participants } = body;
+    const { transcript, deal_id, new_deal, participants, owner } = body;
 
     if (!transcript || transcript.length < 50) {
       return NextResponse.json(
@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
         latest_medpicc_categories: {},
         call_count: 0,
         analysis_ids: [],
+        owner: owner || null,
+        assigned_to: null,
       });
       await addDealToIndex(newDealId);
       resolvedDealId = newDealId;

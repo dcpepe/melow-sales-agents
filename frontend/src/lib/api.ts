@@ -77,6 +77,7 @@ export async function analyzeTranscript(opts: {
   deal_id?: string;
   new_deal?: { deal_name: string; company: string };
   participants?: string;
+  owner?: string;
 }): Promise<AnalysisResponse> {
   const res = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
@@ -156,6 +157,8 @@ export interface Deal {
   company: string;
   stage?: string;
   notes?: string;
+  owner?: string;
+  assigned_to?: string;
   created_at: string;
   updated_at: string;
   latest_call_score: number | null;
@@ -202,7 +205,7 @@ export async function getDeal(id: string): Promise<Deal> {
   return res.json();
 }
 
-export async function updateDeal(id: string, data: Partial<Pick<Deal, "deal_name" | "company" | "stage" | "notes">>): Promise<Deal> {
+export async function updateDeal(id: string, data: Partial<Pick<Deal, "deal_name" | "company" | "stage" | "notes" | "owner" | "assigned_to">>): Promise<Deal> {
   const res = await fetch(`${API_BASE}/deals/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { listGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
+import TeamSelector from "@/components/TeamSelector";
+import { getMemberByName } from "@/lib/team";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -106,6 +108,7 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500 mt-0.5">Deal tracking, MEDPICC scoring &amp; deal rooms</p>
           </div>
           <div className="flex items-center gap-3">
+            <TeamSelector />
             <button
               onClick={() => router.push("/deals")}
               className="border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -203,8 +206,18 @@ export default function Dashboard() {
                   <button
                     key={deal.id}
                     onClick={() => router.push(`/deals/${deal.id}`)}
-                    className="w-full px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left"
+                    className="w-full px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
                   >
+                    {(() => {
+                      const member = deal.owner ? getMemberByName(deal.owner) : undefined;
+                      return member ? (
+                        <div className={`w-7 h-7 ${member.color} rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`} title={member.name}>
+                          {member.initials}
+                        </div>
+                      ) : (
+                        <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 text-[10px] flex-shrink-0">?</div>
+                      );
+                    })()}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {deal.deal_name || deal.company || "Untitled Deal"}

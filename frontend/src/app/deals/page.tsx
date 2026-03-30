@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Deal, listDeals, deleteDeal } from "@/lib/api";
+import TeamSelector from "@/components/TeamSelector";
+import { getMemberByName } from "@/lib/team";
 
 type Filter = "all" | "high" | "medium" | "low";
 
@@ -154,12 +156,15 @@ export default function DealsPage() {
               <p className="text-sm text-gray-500">{deals.length} deals in pipeline</p>
             </div>
           </div>
-          <button
-            onClick={() => router.push("/analyze")}
-            className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800"
-          >
-            + New Deal
-          </button>
+          <div className="flex items-center gap-3">
+            <TeamSelector />
+            <button
+              onClick={() => router.push("/analyze")}
+              className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800"
+            >
+              + New Deal
+            </button>
+          </div>
         </div>
       </header>
 
@@ -288,6 +293,16 @@ export default function DealsPage() {
                     className="p-5 flex items-center gap-4 cursor-pointer"
                     onClick={() => setExpandedDeal(expandedDeal === deal.id ? null : deal.id)}
                   >
+                    {/* Owner Avatar */}
+                    {(() => {
+                      const m = deal.owner ? getMemberByName(deal.owner) : undefined;
+                      return (
+                        <div className={`w-8 h-8 ${m?.color || "bg-gray-200"} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0`} title={deal.owner || "Unassigned"}>
+                          {m?.initials || "?"}
+                        </div>
+                      );
+                    })()}
+
                     {/* Name + Company */}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">

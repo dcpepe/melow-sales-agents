@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { analyzeTranscript, AnalysisResponse } from "@/lib/api";
+import { getCurrentUser } from "@/lib/team";
 import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import DealRoomTab from "@/components/DealRoomTab";
@@ -79,11 +80,13 @@ function AnalyzeContent() {
     setError(null);
     try {
       const participantsContext = contactsToContext(contacts);
+      const currentUser = getCurrentUser();
       const res = await analyzeTranscript({
         transcript,
         deal_id: selectedDealId || undefined,
         new_deal: newDeal || undefined,
         participants: participantsContext || undefined,
+        owner: currentUser?.name || undefined,
       });
       setResult(res);
       setActiveTab("analysis");

@@ -22,7 +22,7 @@ export async function PUT(
   if (!deal) return NextResponse.json({ error: "Deal not found" }, { status: 404 });
 
   const updates = await req.json();
-  const allowed = ["deal_name", "company", "stage", "notes"];
+  const allowed = ["deal_name", "company", "stage", "notes", "owner", "assigned_to"];
   for (const key of allowed) {
     if (updates[key] !== undefined) deal[key] = updates[key];
   }

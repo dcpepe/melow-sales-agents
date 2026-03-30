@@ -3,6 +3,82 @@
 import { useState } from "react";
 import { getActionPlan, ActionPlan } from "@/lib/api";
 
+const DEMON_TIPS = [
+  "Identifying MEDPICC gaps...",
+  "Crafting attack scripts...",
+  "Mapping power players...",
+  "Calculating kill shots...",
+  "Building war plan...",
+  "Weaponizing intel...",
+  "Finding the jugular...",
+  "Loading deal ammo...",
+];
+
+function DemonLoader() {
+  const [tipIdx, setTipIdx] = useState(0);
+
+  useState(() => {
+    const interval = setInterval(() => setTipIdx((i) => (i + 1) % DEMON_TIPS.length), 2000);
+    return () => clearInterval(interval);
+  });
+
+  return (
+    <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center overflow-hidden">
+      {/* Animated background pulse */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-radial from-red-900/30 via-transparent to-transparent animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-red-600/10 animate-ping" style={{ animationDuration: "3s" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-red-600/15 animate-ping" style={{ animationDuration: "2s", animationDelay: "0.5s" }} />
+      </div>
+
+      {/* Floating emojis */}
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-float pointer-events-none select-none text-2xl"
+          style={{
+            left: `${10 + Math.random() * 80}%`,
+            top: `${10 + Math.random() * 80}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            animationDuration: `${3 + Math.random() * 4}s`,
+            opacity: 0.4,
+          }}
+        >
+          {["&#128520;", "&#128293;", "&#9876;&#65039;", "&#127919;", "&#128165;", "&#9889;"][i % 6]}
+        </div>
+      ))}
+
+      {/* Center content */}
+      <div className="relative z-10 text-center">
+        <div className="text-8xl mb-6 animate-bounce" style={{ animationDuration: "1.5s" }}>
+          <span dangerouslySetInnerHTML={{ __html: "&#128520;" }} />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Summoning Sales Demon</h2>
+        <div className="bg-red-900/50 backdrop-blur-sm border border-red-800 px-6 py-3 rounded-xl inline-block">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+            </div>
+            <p className="text-red-200 text-sm font-medium">{DEMON_TIPS[tipIdx]}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-red-400/60 text-xs">No mercy. No fluff. Just results.</p>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-20px) rotate(5deg); }
+          75% { transform: translateY(20px) rotate(-5deg); }
+        }
+        .animate-float { animation: float ease-in-out infinite; }
+      `}</style>
+    </div>
+  );
+}
+
 export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: string; dealId?: string }) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<ActionPlan | null>(null);
@@ -21,23 +97,32 @@ export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: str
     }
   }
 
+  if (loading) return <DemonLoader />;
+
   if (!plan) {
     return (
-      <div className="bg-gradient-to-br from-red-950 to-gray-900 rounded-xl p-8 text-center">
-        <div className="text-5xl mb-4">&#128520;</div>
-        <h3 className="text-xl font-bold text-white mb-2">Sales Demon Mode</h3>
-        <p className="text-red-200 text-sm mb-6 max-w-md mx-auto">
-          Generate a ruthless action plan to close every MEDPICC gap.
-          Exact scripts, specific targets, aggressive timelines.
-        </p>
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? "Unleashing..." : "Activate Sales Demon"}
-        </button>
+      <div className="bg-gradient-to-br from-red-950 to-gray-900 rounded-xl p-10 text-center relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 36px)",
+          }} />
+        </div>
+        <div className="relative z-10">
+          <div className="text-6xl mb-4"><span dangerouslySetInnerHTML={{ __html: "&#128520;" }} /></div>
+          <h3 className="text-2xl font-bold text-white mb-3">Sales Demon Mode</h3>
+          <p className="text-red-200 text-sm mb-8 max-w-lg mx-auto leading-relaxed">
+            Generate a ruthless, no-BS action plan that closes every MEDPICC gap.
+            Exact scripts to say, specific people to target, aggressive timelines.
+          </p>
+          {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+          <button
+            onClick={handleGenerate}
+            className="bg-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-red-500 transition-all hover:scale-105 shadow-lg shadow-red-900/50"
+          >
+            Activate Sales Demon
+          </button>
+        </div>
       </div>
     );
   }
@@ -48,14 +133,14 @@ export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: str
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-red-950 rounded-xl p-5 border border-red-900">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">&#128680;</span>
+            <span className="text-lg" dangerouslySetInnerHTML={{ __html: "&#128680;" }} />
             <h3 className="font-bold text-red-400 text-sm uppercase tracking-wider">Deal Killer</h3>
           </div>
           <p className="text-white text-sm leading-relaxed">{plan.deal_killer}</p>
         </div>
         <div className="bg-emerald-950 rounded-xl p-5 border border-emerald-900">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">&#9889;</span>
+            <span className="text-lg" dangerouslySetInnerHTML={{ __html: "&#9889;" }} />
             <h3 className="font-bold text-emerald-400 text-sm uppercase tracking-wider">Power Move</h3>
           </div>
           <p className="text-white text-sm leading-relaxed">{plan.power_move}</p>
@@ -104,7 +189,7 @@ export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: str
       {/* Email Draft */}
       <div className="bg-white rounded-xl border shadow-sm p-5">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">&#9993;&#65039;</span>
+          <span className="text-lg" dangerouslySetInnerHTML={{ __html: "&#9993;&#65039;" }} />
           <h3 className="font-semibold text-gray-900">Follow-Up Email Draft</h3>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 border">

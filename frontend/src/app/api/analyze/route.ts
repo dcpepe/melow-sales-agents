@@ -8,6 +8,7 @@ import {
   fillTemplate,
 } from "@/lib/server/prompts";
 import { saveAnalysis, saveDeal, addDealToIndex, addAnalysisToDeal } from "@/lib/server/storage";
+import { recomputeDealMetrics, appendMedpiccSnapshot } from "@/lib/server/deal-analysis-service";
 
 export const maxDuration = 120;
 
@@ -46,11 +47,17 @@ export async function POST(req: NextRequest) {
         company: new_deal.company || "",
         created_at: now,
         updated_at: now,
+        last_updated_at: now,
+        // Current scores (will be populated after analysis)
+        medpicc_score_current: null,
+        win_probability_current: null,
         latest_call_score: null,
         latest_medpicc_score: null,
         latest_risk_assessment: null,
         latest_deal_probability: null,
         latest_medpicc_categories: {},
+        // History (append-only)
+        medpicc_history: [],
         call_count: 0,
         analysis_ids: [],
         owner: owner || null,
@@ -108,7 +115,7 @@ export async function POST(req: NextRequest) {
     };
     await saveAnalysis(analysisId, analysisData);
 
-    // Link analysis to deal and update cached scores
+    // Link analysis to deal
     const medpiccData = medpicc as Record<string, unknown>;
     const medpiccCategories: Record<string, number> = {};
     for (const key of ["metrics", "economic_buyer", "decision_criteria", "decision_process", "paper_process", "identify_pain", "champion", "competition"]) {
@@ -123,6 +130,14 @@ export async function POST(req: NextRequest) {
       deal_probability: medpiccData.deal_probability as number,
       medpicc_categories: medpiccCategories,
     });
+
+    // Recompute deal metrics via service layer
+    await recomputeDealMetrics(resolvedDealId);
+
+    // Append MEDPICC snapshot to history (never overwrites)
+    const overallScore = (medpiccData.overall_score as number) ?? 0;
+    const winProb = (medpiccData.deal_probability as number) ?? 0;
+    await appendMedpiccSnapshot(resolvedDealId, overallScore, winProb, "call");
 
     return NextResponse.json({
       id: analysisId,

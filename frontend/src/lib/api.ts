@@ -151,6 +151,13 @@ export async function getActionPlan(opts: { analysisId?: string; dealId?: string
 
 // Deals
 
+export interface MedpiccSnapshot {
+  score: number;
+  win_probability: number;
+  timestamp: string;
+  source: "call" | "email" | "manual";
+}
+
 export interface Deal {
   id: string;
   deal_name: string;
@@ -161,13 +168,29 @@ export interface Deal {
   assigned_to?: string;
   created_at: string;
   updated_at: string;
+  last_updated_at: string;
+  // Current computed scores (medpicc_score_current / win_probability_current are canonical)
+  medpicc_score_current: number | null;
+  win_probability_current: number | null;
+  // Legacy aliases (kept for backward compat with UI components)
   latest_call_score: number | null;
   latest_medpicc_score: number | null;
   latest_risk_assessment: string | null;
   latest_deal_probability: number | null;
   latest_medpicc_categories: Record<string, number>;
+  // History (append-only, never overwrite)
+  medpicc_history: MedpiccSnapshot[];
   call_count: number;
   analysis_ids: string[];
+}
+
+export interface AnalysisVersion {
+  id: string;
+  deal_id: string;
+  type: "meeting_prep" | "action_plan" | "frank_analysis";
+  version: number;
+  content: string;
+  created_at: string;
 }
 
 export interface CallAnalysisDetail {

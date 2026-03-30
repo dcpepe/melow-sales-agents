@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callClaude, callClaudeText } from "@/lib/server/llm";
 import { listDealIds, loadAnalysis } from "@/lib/server/storage";
+// import { saveNewAnalysisVersion } from "@/lib/server/deal-analysis-service"; // available for future per-deal coaching cache
 import { kv } from "@vercel/kv";
 
 export const maxDuration = 120;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { saveDeal, listDealIds, addDealToIndex, saveAnalysis } from "@/lib/server/storage";
+import { initializeMedpiccHistory } from "@/lib/server/deal-analysis-service";
 import { kv } from "@vercel/kv";
 
 async function autoMigrateOrphans() {
@@ -46,17 +47,39 @@ async function autoMigrateOrphans() {
       }
     }
 
+    const overallScore = (medpicc?.overall_score as number) ?? null;
+    const winProb = (medpicc?.deal_probability as number) ?? null;
+
+    // Initialize medpicc_history from existing analyses (oldest to newest)
+    const history = analyses
+      .slice()
+      .reverse()
+      .filter((a) => a.medpicc)
+      .map((a) => {
+        const mp = a.medpicc as Record<string, unknown>;
+        return {
+          score: (mp?.overall_score as number) ?? 0,
+          win_probability: (mp?.deal_probability as number) ?? 0,
+          timestamp: (a.created_at as string) || now,
+          source: "call" as const,
+        };
+      });
+
     await saveDeal(dealId, {
       id: dealId,
       deal_name: (newest.deal_name as string) || (newest.company as string) || "Untitled Deal",
       company: (newest.company as string) || "",
       created_at: (analyses[analyses.length - 1].created_at as string) || now,
       updated_at: now,
+      last_updated_at: now,
+      medpicc_score_current: overallScore,
+      win_probability_current: winProb,
       latest_call_score: callAnalysis?.call_score ?? null,
-      latest_medpicc_score: medpicc?.overall_score ?? null,
+      latest_medpicc_score: overallScore,
       latest_risk_assessment: medpicc?.risk_assessment ?? null,
-      latest_deal_probability: medpicc?.deal_probability ?? null,
+      latest_deal_probability: winProb,
       latest_medpicc_categories: cats,
+      medpicc_history: history,
       call_count: analyses.length,
       analysis_ids: analyses.map((a) => a.id as string),
     });
@@ -88,7 +111,15 @@ export async function GET() {
     }
     const results = await pipeline.exec();
 
-    const deals = results.filter(Boolean);
+    const deals = results.filter(Boolean) as Record<string, unknown>[];
+
+    // Backward compat: initialize medpicc_history for deals missing it
+    for (const deal of deals) {
+      if (!deal.medpicc_history || !(deal.medpicc_history as unknown[]).length) {
+        await initializeMedpiccHistory(deal.id as string);
+      }
+    }
+
     return NextResponse.json({ deals });
   } catch (error) {
     console.error("List deals error:", error);
@@ -112,11 +143,15 @@ export async function POST(req: NextRequest) {
       company: company || "",
       created_at: now,
       updated_at: now,
+      last_updated_at: now,
+      medpicc_score_current: null,
+      win_probability_current: null,
       latest_call_score: null,
       latest_medpicc_score: null,
       latest_risk_assessment: null,
       latest_deal_probability: null,
       latest_medpicc_categories: {},
+      medpicc_history: [],
       call_count: 0,
       analysis_ids: [],
     };

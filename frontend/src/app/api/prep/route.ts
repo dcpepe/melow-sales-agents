@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callClaudeText } from "@/lib/server/llm";
 import { loadDeal } from "@/lib/server/storage";
+import { saveNewAnalysisVersion } from "@/lib/server/deal-analysis-service";
 import { kv } from "@vercel/kv";
 
 export const maxDuration = 60;
@@ -70,7 +71,14 @@ Be brutally specific. Reference real names, numbers, and moments from the transc
 
     const prep = await callClaudeText(prompt);
 
-    return NextResponse.json({ prep, generated_at: new Date().toISOString() });
+    // Save versioned cache (never overwrites previous versions)
+    const version = await saveNewAnalysisVersion(deal_id, "meeting_prep", prep);
+
+    return NextResponse.json({
+      prep,
+      version: version.version,
+      generated_at: version.created_at,
+    });
   } catch (error) {
     console.error("Prep error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";

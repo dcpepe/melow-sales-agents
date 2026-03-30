@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { callClaude } from "@/lib/server/llm";
 import { MEDPICC_ACTION_PLAN_PROMPT, fillTemplate } from "@/lib/server/prompts";
 import { loadAnalysis, loadDeal } from "@/lib/server/storage";
+import { saveNewAnalysisVersion } from "@/lib/server/deal-analysis-service";
 import { kv } from "@vercel/kv";
 
 export const maxDuration = 60;
@@ -76,6 +77,12 @@ export async function POST(req: NextRequest) {
     });
 
     const result = await callClaude(prompt);
+
+    // Save versioned cache if deal-scoped
+    if (deal_id) {
+      await saveNewAnalysisVersion(deal_id, "action_plan", JSON.stringify(result));
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Action plan error:", error);

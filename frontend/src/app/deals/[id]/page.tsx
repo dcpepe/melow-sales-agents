@@ -8,6 +8,7 @@ import DealRoomTab from "@/components/DealRoomTab";
 import ChatSidebar from "@/components/ChatSidebar";
 import DealHeader from "@/components/DealHeader";
 import MeetingPrepTab from "@/components/MeetingPrepTab";
+import AgentRunner from "@/components/AgentRunner";
 
 type Tab = "overview" | "calls" | "prep" | "actions" | "dealroom";
 
@@ -265,6 +266,84 @@ export default function DealIntelligencePage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Agent Actions */}
+            {analyses.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Run Agents</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <AgentRunner
+                    dealId={id}
+                    recipe="deal_assistant"
+                    title="Deal Health Check"
+                    icon="🏥"
+                    description="Analyze health, risks, and next actions"
+                    renderParsed={(p) => (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                            p.health === "strong" ? "bg-green-100 text-green-800" :
+                            p.health === "at_risk" ? "bg-yellow-100 text-yellow-800" :
+                            "bg-red-100 text-red-800"
+                          }`}>{(p.health as string || "").toUpperCase()}</span>
+                          <span className="text-2xl font-bold text-gray-900">{p.score as number}/100</span>
+                        </div>
+                        <p className="text-sm text-gray-700">{p.health_summary as string}</p>
+                        {(p.risks as { risk: string; severity: string; mitigation: string }[])?.map((r, i) => (
+                          <div key={i} className={`p-3 rounded-lg border-l-4 ${r.severity === "high" ? "border-l-red-500 bg-red-50" : r.severity === "medium" ? "border-l-yellow-500 bg-yellow-50" : "border-l-gray-300 bg-gray-50"}`}>
+                            <p className="text-sm font-medium text-gray-900">{r.risk}</p>
+                            <p className="text-xs text-gray-500 mt-1">{r.mitigation}</p>
+                          </div>
+                        ))}
+                        {(p.next_actions as { action: string; timing: string }[])?.map((a, i) => (
+                          <div key={i} className="flex items-start gap-2 text-sm">
+                            <span className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
+                            <div>
+                              <p className="text-gray-900 font-medium">{a.action}</p>
+                              <p className="text-xs text-gray-500">{a.timing}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  />
+                  <AgentRunner
+                    dealId={id}
+                    recipe="frank_deal"
+                    title="Run Frank"
+                    icon="😎"
+                    description="Frank's deal-specific coaching"
+                    saveVersion
+                  />
+                  <AgentRunner
+                    dealId={id}
+                    recipe="followup_email"
+                    title="Follow-Up Email"
+                    icon="✉️"
+                    description="Generate a ready-to-send follow-up"
+                    renderParsed={(p) => (
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-xs font-medium text-gray-500 mb-1">Subject</p>
+                          <p className="text-sm font-semibold text-gray-900">{p.subject as string}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-xs font-medium text-gray-500 mb-1">To: {p.to as string}</p>
+                          <p className="text-sm text-gray-700 whitespace-pre-line">{p.body as string}</p>
+                        </div>
+                        <p className="text-xs text-gray-400 italic">{p.why_this_works as string}</p>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(`Subject: ${p.subject}\n\n${p.body}`)}
+                          className="text-xs text-gray-600 font-medium hover:text-gray-900"
+                        >
+                          Copy email
+                        </button>
+                      </div>
+                    )}
+                  />
+                </div>
               </div>
             )}
           </div>

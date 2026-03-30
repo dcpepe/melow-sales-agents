@@ -265,6 +265,34 @@ export async function getCallAnalysis(id: string): Promise<CallAnalysisDetail> {
   return res.json();
 }
 
+// Agents
+
+export interface AgentResult {
+  output: string;
+  parsed?: Record<string, unknown>;
+  model_used: string;
+  tokens_used?: number;
+  recipe: string;
+}
+
+export async function runAgentApi(opts: {
+  recipe: string;
+  deal_id?: string;
+  model?: "fast" | "reasoning";
+  save_version?: boolean;
+}): Promise<{ result: AgentResult; version?: AnalysisVersion | null }> {
+  const res = await fetch(`${API_BASE}/agents`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || "Agent failed");
+  }
+  return res.json();
+}
+
 // Granola
 
 export interface GranolaNoteListItem {

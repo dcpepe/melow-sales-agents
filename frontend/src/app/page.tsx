@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { listGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
 import TeamSelector from "@/components/TeamSelector";
 import FrankGolden from "@/components/FrankGolden";
+import GlobalIntelligence from "@/components/GlobalIntelligence";
 import { getMemberByName } from "@/lib/team";
 
 export default function Dashboard() {
@@ -175,7 +176,10 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Frank Golden — Sales Coach */}
+        {/* Global Intelligence */}
+        <GlobalIntelligence />
+
+        {/* Frank — Sales Coach */}
         <FrankGolden />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

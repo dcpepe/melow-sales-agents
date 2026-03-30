@@ -90,11 +90,13 @@ export async function analyzeTranscript(opts: {
   return res.json();
 }
 
-export async function createDealRoom(analysisId: string): Promise<DealRoomResponse> {
+export async function createDealRoom(opts: { analysisId?: string; dealId?: string }): Promise<DealRoomResponse> {
   const res = await fetch(`${API_BASE}/deal-room`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ analysis_id: analysisId }),
+    body: JSON.stringify({
+      ...(opts.dealId ? { deal_id: opts.dealId } : { analysis_id: opts.analysisId }),
+    }),
   });
   if (!res.ok) throw new Error(`Deal room creation failed: ${res.statusText}`);
   return res.json();
@@ -131,11 +133,13 @@ export interface ActionPlan {
   email_draft: string;
 }
 
-export async function getActionPlan(analysisId: string): Promise<ActionPlan> {
+export async function getActionPlan(opts: { analysisId?: string; dealId?: string }): Promise<ActionPlan> {
   const res = await fetch(`${API_BASE}/action-plan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ analysis_id: analysisId }),
+    body: JSON.stringify({
+      ...(opts.dealId ? { deal_id: opts.dealId } : { analysis_id: opts.analysisId }),
+    }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);

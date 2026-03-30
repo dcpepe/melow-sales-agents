@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { getActionPlan, ActionPlan } from "@/lib/api";
 
-export default function ActionPlanTab({ analysisId }: { analysisId: string }) {
+export default function ActionPlanTab({ analysisId, dealId }: { analysisId?: string; dealId?: string }) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<ActionPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export default function ActionPlanTab({ analysisId }: { analysisId: string }) {
     setLoading(true);
     setError(null);
     try {
-      const result = await getActionPlan(analysisId);
+      const result = await getActionPlan({ dealId, analysisId });
       setPlan(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to generate action plan");

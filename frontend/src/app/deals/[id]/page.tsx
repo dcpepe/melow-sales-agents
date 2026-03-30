@@ -329,13 +329,13 @@ export default function DealIntelligencePage() {
 
         {/* Action Plan & Deal Room — use latest analysis */}
         {activeTab === "actions" && analyses.length > 0 && (
-          <ActionPlanTab analysisId={analyses[0].id} />
+          <ActionPlanTab dealId={id} />
         )}
         {activeTab === "dealroom" && analyses.length > 0 && (
-          <DealRoomTab analysisId={analyses[0].id} />
+          <DealRoomTab dealId={id} />
         )}
 
-        {analyses.length > 0 && <ChatSidebar analysisId={analyses[0].id} />}
+        <ChatSidebar dealId={id} />
       </main>
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createDealRoom, DealRoom } from "@/lib/api";
 
-export default function DealRoomTab({ analysisId }: { analysisId: string }) {
+export default function DealRoomTab({ analysisId, dealId }: { analysisId?: string; dealId?: string }) {
   const [loading, setLoading] = useState(false);
   const [dealRoom, setDealRoom] = useState<DealRoom | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -13,7 +13,7 @@ export default function DealRoomTab({ analysisId }: { analysisId: string }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await createDealRoom(analysisId);
+      const res = await createDealRoom({ dealId, analysisId });
       setDealRoom(res.deal_room);
       setShareUrl(res.shareable_url);
     } catch (e: unknown) {

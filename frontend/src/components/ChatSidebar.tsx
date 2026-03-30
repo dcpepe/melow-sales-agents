@@ -16,7 +16,7 @@ const QUICK_PROMPTS = [
   "Summarize the key risks",
 ];
 
-export default function ChatSidebar({ analysisId }: { analysisId: string }) {
+export default function ChatSidebar({ analysisId, dealId }: { analysisId?: string; dealId?: string }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -48,7 +48,7 @@ export default function ChatSidebar({ analysisId }: { analysisId: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          analysis_id: analysisId,
+          ...(dealId ? { deal_id: dealId } : { analysis_id: analysisId }),
           messages: newMessages,
         }),
       });

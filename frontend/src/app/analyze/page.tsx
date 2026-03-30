@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { analyzeTranscript, AnalysisResponse } from "@/lib/api";
 import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
@@ -15,10 +15,24 @@ type Tab = "analysis" | "medpicc" | "dealroom";
 function AnalyzeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [transcript, setTranscript] = useState(searchParams.get("transcript") || "");
-  const [dealName, setDealName] = useState(searchParams.get("deal") || "");
-  const [company, setCompany] = useState(searchParams.get("company") || "");
-  const [participants, setParticipants] = useState(searchParams.get("participants") || "");
+  const [transcript, setTranscript] = useState("");
+  const [dealName, setDealName] = useState("");
+  const [company, setCompany] = useState("");
+  const [participants, setParticipants] = useState("");
+
+  useEffect(() => {
+    if (searchParams.get("from") === "granola") {
+      try {
+        const data = JSON.parse(sessionStorage.getItem("granola_import") || "{}");
+        if (data.transcript) setTranscript(data.transcript);
+        if (data.deal) setDealName(data.deal);
+        if (data.participants) setParticipants(data.participants);
+        sessionStorage.removeItem("granola_import");
+      } catch {
+        // ignore
+      }
+    }
+  }, [searchParams]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResponse | null>(null);

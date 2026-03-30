@@ -75,12 +75,12 @@ export default function Dashboard() {
       const participants = note.participants
         ? note.participants.map((p) => p.name).join(", ")
         : "";
-      const params = new URLSearchParams({
+      sessionStorage.setItem("granola_import", JSON.stringify({
         transcript,
         deal: note.title,
         participants,
-      });
-      router.push(`/analyze?${params}`);
+      }));
+      router.push("/analyze?from=granola");
     } catch {
       setImportingNote(null);
     }

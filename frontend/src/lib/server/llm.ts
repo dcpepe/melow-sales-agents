@@ -71,3 +71,15 @@ export async function callClaude(prompt: string, fast = false): Promise<Record<s
 
   return extractJSON(block.text);
 }
+
+export async function callClaudeText(prompt: string, fast = false): Promise<string> {
+  const message = await client.messages.create({
+    model: fast ? FAST_MODEL : MODEL,
+    max_tokens: 4096,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const block = message.content[0];
+  if (block.type !== "text") throw new Error("Unexpected response type");
+  return block.text.trim();
+}

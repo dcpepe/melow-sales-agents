@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { listGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
 import TeamSelector from "@/components/TeamSelector";
+import FrankGolden from "@/components/FrankGolden";
 import { getMemberByName } from "@/lib/team";
 
 export default function Dashboard() {
@@ -173,6 +174,9 @@ export default function Dashboard() {
             </p>
           </button>
         </div>
+
+        {/* Frank Golden — Sales Coach */}
+        <FrankGolden />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Deals */}

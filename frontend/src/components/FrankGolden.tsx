@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import FrankAvatar from "./FrankAvatar";
-import FrankChat from "./FrankChat";
 
 interface CoachingSummary {
   summary: string;
@@ -10,13 +10,12 @@ interface CoachingSummary {
 }
 
 export default function FrankGolden() {
-  const [chatOpen, setChatOpen] = useState(false);
+  const router = useRouter();
   const [coaching, setCoaching] = useState<CoachingSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasDeals, setHasDeals] = useState(false);
 
   useEffect(() => {
-    // Check if there are deals, then auto-load cached coaching
     fetch("/api/coaching", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
       .then((r) => r.json())
       .then((data) => {
@@ -50,70 +49,57 @@ export default function FrankGolden() {
   }
 
   return (
-    <>
-      <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 rounded-xl border border-amber-200/50 shadow-sm p-6 mb-8">
-        <div className="flex items-start gap-4">
+    <div
+      onClick={() => router.push("/coaching")}
+      className="bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 rounded-xl border border-amber-200/50 shadow-sm p-6 mb-8 cursor-pointer hover:shadow-md hover:border-amber-300 transition-all group"
+    >
+      <div className="flex items-start gap-4">
+        <div className="group-hover:scale-105 transition-transform">
           <FrankAvatar size="md" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <div>
-                <h3 className="font-bold text-gray-900">Frank Golden</h3>
-                <p className="text-xs text-gray-500">Your Sales Coach &middot; New York City</p>
-              </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <h3 className="font-bold text-gray-900">Frank Golden</h3>
+              <p className="text-xs text-gray-500">Your Sales Coach &middot; New York City</p>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500 group-hover:text-gray-900 transition-colors">
+              <span className="hidden sm:block">Enter Coaching Room</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+
+          {!hasDeals ? (
+            <p className="text-sm text-gray-500 mt-2 italic">
+              &ldquo;Hey, I&apos;m Frank. Once you start analyzing deals, I&apos;ll give you the real talk on how to close more. No fluff.&rdquo;
+            </p>
+          ) : !coaching ? (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600 italic">
+                &ldquo;Let me take a look at your pipeline and tell you what I see...&rdquo;
+              </p>
               <button
-                onClick={() => setChatOpen(true)}
-                className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
+                onClick={(e) => { e.stopPropagation(); generateCoaching(); }}
+                disabled={loading}
+                className="mt-2 text-sm font-medium text-amber-700 hover:text-amber-900 disabled:opacity-50"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Talk to Frank
+                {loading ? "Frank is reviewing..." : "Get Frank's Take"}
               </button>
             </div>
-
-            {!hasDeals ? (
-              <p className="text-sm text-gray-500 mt-2 italic">
-                &ldquo;Hey, I&apos;m Frank. Once you start analyzing deals, I&apos;ll give you the real talk on how to close more. No fluff.&rdquo;
+          ) : (
+            <div className="mt-2">
+              <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                {coaching.summary}
               </p>
-            ) : !coaching ? (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600 mb-3 italic">
-                  &ldquo;Let me take a look at your pipeline and tell you what I see...&rdquo;
-                </p>
-                <button
-                  onClick={generateCoaching}
-                  disabled={loading}
-                  className="text-sm font-medium text-amber-700 hover:text-amber-900 disabled:opacity-50"
-                >
-                  {loading ? "Frank is reviewing..." : "Get Frank's Take"}
-                </button>
-              </div>
-            ) : (
-              <div className="mt-2">
-                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                  {coaching.summary}
-                </div>
-                <div className="flex items-center gap-3 mt-3">
-                  <button
-                    onClick={generateCoaching}
-                    disabled={loading}
-                    className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                  >
-                    {loading ? "Refreshing..." : "Refresh"}
-                  </button>
-                  {coaching.generated_at && (
-                    <span className="text-xs text-gray-300">
-                      Updated {new Date(coaching.generated_at).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+              <p className="text-xs text-amber-600 font-medium mt-2 group-hover:underline">
+                See full coaching breakdown &rarr;
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
-      {chatOpen && <FrankChat onClose={() => setChatOpen(false)} />}
-    </>
+    </div>
   );
 }

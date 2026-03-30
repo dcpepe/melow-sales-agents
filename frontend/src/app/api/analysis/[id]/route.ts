@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadAnalysis } from "@/lib/server/storage";
+import { loadAnalysis, deleteAnalysis } from "@/lib/server/storage";
 
 export async function GET(
   _req: NextRequest,
@@ -13,4 +13,13 @@ export async function GET(
   }
 
   return NextResponse.json(data);
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  await deleteAnalysis(id);
+  return NextResponse.json({ ok: true });
 }

@@ -175,6 +175,10 @@ export async function getDeal(id: string): Promise<Record<string, unknown>> {
   return res.json();
 }
 
+export async function deleteDeal(id: string): Promise<void> {
+  await fetch(`${API_BASE}/analysis/${id}`, { method: "DELETE" });
+}
+
 // Granola
 
 export interface GranolaNoteListItem {

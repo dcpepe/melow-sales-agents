@@ -8,6 +8,7 @@ import DealRoomTab from "@/components/DealRoomTab";
 import ActionPlanTab from "@/components/ActionPlanTab";
 import GranolaNotesList from "@/components/GranolaNotesList";
 import ContactsInput, { Contact, contactsToContext } from "@/components/ContactsInput";
+import SaveDealPrompt from "@/components/SaveDealPrompt";
 import MoneyLoader from "@/components/MoneyLoader";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -49,6 +50,7 @@ function AnalyzeContent() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("analysis");
+  const [dealSaved, setDealSaved] = useState(false);
 
   async function handleAnalyze() {
     if (transcript.length < 50) {
@@ -158,11 +160,22 @@ function AnalyzeContent() {
         {result && (
           <div>
             <button
-              onClick={() => setResult(null)}
+              onClick={() => { setResult(null); setDealSaved(false); }}
               className="text-sm text-gray-500 hover:text-gray-900 mb-4"
             >
               &larr; New Analysis
             </button>
+
+            {!dealSaved && (
+              <SaveDealPrompt
+                dealName={dealName}
+                company={company}
+                onSaveNew={() => {
+                  setDealSaved(true);
+                }}
+                onDismiss={() => setDealSaved(true)}
+              />
+            )}
 
             <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6">
               {tabs.map((tab) => (

@@ -1,0 +1,13 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/analyze/route.ts": {
+      "maxDuration": 120
+    },
+    "src/app/api/deal-room/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

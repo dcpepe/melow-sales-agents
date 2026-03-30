@@ -74,7 +74,7 @@ export default function FrankChat({ onClose }: { onClose: () => void }) {
         <div className="flex items-center gap-3">
           <FrankAvatar size="sm" />
           <div>
-            <p className="text-sm font-semibold text-gray-900">Frank Golden</p>
+            <p className="text-sm font-semibold text-gray-900">Frank</p>
             <p className="text-xs text-gray-500">Your Sales Coach &middot; NYC</p>
           </div>
         </div>

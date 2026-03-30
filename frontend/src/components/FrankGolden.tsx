@@ -60,7 +60,7 @@ export default function FrankGolden() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <h3 className="font-bold text-gray-900">Frank Golden</h3>
+              <h3 className="font-bold text-gray-900">Frank</h3>
               <p className="text-xs text-gray-500">Your Sales Coach &middot; New York City</p>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500 group-hover:text-gray-900 transition-colors">

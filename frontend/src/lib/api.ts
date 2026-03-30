@@ -110,6 +110,71 @@ export async function getDealRoom(id: string): Promise<DealRoom> {
   return res.json();
 }
 
+// Action Plan
+
+export interface ActionPlanAction {
+  action: string;
+  script: string;
+  target: string;
+  timing: string;
+}
+
+export interface ActionPlanGap {
+  category: string;
+  category_name: string;
+  score: number;
+  gap: string;
+  urgency: string;
+  actions: ActionPlanAction[];
+}
+
+export interface ActionPlan {
+  gaps: ActionPlanGap[];
+  deal_killer: string;
+  power_move: string;
+  email_draft: string;
+}
+
+export async function getActionPlan(analysisId: string): Promise<ActionPlan> {
+  const res = await fetch(`${API_BASE}/action-plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ analysis_id: analysisId }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || "Action plan failed");
+  }
+  return res.json();
+}
+
+// Deals
+
+export interface DealListItem {
+  id: string;
+  deal_name: string | null;
+  company: string | null;
+  participants: string | null;
+  call_score: number | null;
+  medpicc_score: number | null;
+  risk_assessment: string | null;
+  deal_probability: number | null;
+  created_at: string | null;
+}
+
+export async function listDeals(): Promise<{ deals: DealListItem[] }> {
+  const res = await fetch(`${API_BASE}/analyses`);
+  if (!res.ok) return { deals: [] };
+  const data = await res.json();
+  return { deals: data.analyses || [] };
+}
+
+export async function getDeal(id: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${API_BASE}/analysis/${id}`);
+  if (!res.ok) throw new Error("Deal not found");
+  return res.json();
+}
+
 // Granola
 
 export interface GranolaNoteListItem {

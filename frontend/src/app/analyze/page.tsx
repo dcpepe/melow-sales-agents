@@ -5,12 +5,13 @@ import { analyzeTranscript, AnalysisResponse } from "@/lib/api";
 import CallAnalysisTab from "@/components/CallAnalysisTab";
 import MEDPICCTab from "@/components/MEDPICCTab";
 import DealRoomTab from "@/components/DealRoomTab";
+import ActionPlanTab from "@/components/ActionPlanTab";
 import GranolaNotesList from "@/components/GranolaNotesList";
 import MoneyLoader from "@/components/MoneyLoader";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-type Tab = "analysis" | "medpicc" | "dealroom";
+type Tab = "analysis" | "medpicc" | "actions" | "dealroom";
 
 function AnalyzeContent() {
   const router = useRouter();
@@ -59,6 +60,7 @@ function AnalyzeContent() {
   const tabs: { key: Tab; label: string }[] = [
     { key: "analysis", label: "Call Analysis" },
     { key: "medpicc", label: "MEDPICC" },
+    { key: "actions", label: "Action Plan" },
     { key: "dealroom", label: "Deal Room" },
   ];
 
@@ -165,6 +167,7 @@ function AnalyzeContent() {
 
             {activeTab === "analysis" && <CallAnalysisTab data={result.call_analysis} />}
             {activeTab === "medpicc" && <MEDPICCTab data={result.medpicc} />}
+            {activeTab === "actions" && <ActionPlanTab analysisId={result.id} />}
             {activeTab === "dealroom" && <DealRoomTab analysisId={result.id} />}
           </div>
         )}

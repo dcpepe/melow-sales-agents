@@ -115,12 +115,20 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Melow Sales Intelligence</h1>
             <p className="text-sm text-gray-500 mt-0.5">Call analysis, MEDPICC scoring &amp; deal rooms</p>
           </div>
-          <button
-            onClick={() => router.push("/analyze")}
-            className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-          >
-            + New Analysis
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/deals")}
+              className="border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              Deal Archive
+            </button>
+            <button
+              onClick={() => router.push("/analyze")}
+              className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+            >
+              + New Analysis
+            </button>
+          </div>
         </div>
       </header>
 

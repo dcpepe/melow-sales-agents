@@ -6,7 +6,6 @@ export async function GET() {
     const keys = await kv.keys("analysis:*");
     const recent: Record<string, unknown>[] = [];
 
-    // Get the 20 most recent (keys are unordered, so we fetch and sort)
     const pipeline = kv.pipeline();
     for (const key of keys.slice(0, 50)) {
       pipeline.get(key);
@@ -16,13 +15,17 @@ export async function GET() {
     for (const data of results) {
       if (data && typeof data === "object") {
         const d = data as Record<string, unknown>;
+        const medpicc = d.medpicc as Record<string, unknown> | undefined;
         recent.push({
           id: d.id,
           deal_name: d.deal_name,
           company: d.company,
+          participants: d.participants,
           call_score: (d.call_analysis as Record<string, unknown>)?.call_score,
-          medpicc_score: (d.medpicc as Record<string, unknown>)?.overall_score,
-          risk_assessment: (d.medpicc as Record<string, unknown>)?.risk_assessment,
+          medpicc_score: medpicc?.overall_score,
+          risk_assessment: medpicc?.risk_assessment,
+          deal_probability: medpicc?.deal_probability,
+          created_at: d.created_at || null,
         });
       }
     }

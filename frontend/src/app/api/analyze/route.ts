@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       labeled_transcript: labeledTranscript,
       call_analysis: callAnalysis,
       medpicc,
+      created_at: new Date().toISOString(),
     };
     await saveAnalysis(analysisId, analysisData);
 

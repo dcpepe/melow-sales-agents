@@ -136,6 +136,52 @@ Return ONLY valid JSON:
   "value_proposition": "<tailored 2-3 sentence value prop for this specific company>"
 }`;
 
+export const MEDPICC_ACTION_PLAN_PROMPT = `You are an elite sales strategist. You think like a closer. You've reviewed this deal's MEDPICC scoring and transcript. Your job: generate a ruthlessly specific action plan to fill every gap.
+
+LABELED TRANSCRIPT:
+{labeled_transcript}
+
+MEDPICC SCORES:
+{medpicc_scores}
+
+For EACH MEDPICC category that scored 3 or below, generate:
+- gap: What's missing (1 sentence)
+- urgency: Why this kills the deal if not fixed (1 sentence)
+- actions: 2-3 specific actions with exact phrasing of what to say/ask/do. Be a sales demon — no generic advice. Include:
+  - The exact question or statement to use
+  - Who to target (title/role)
+  - When (next call, email before next meeting, etc.)
+  - The trap: what insight you're trying to extract
+
+Also generate:
+- deal_killer: The #1 thing that will lose this deal if not addressed this week
+- power_move: One bold, high-impact action that could accelerate this deal significantly
+- email_draft: A short follow-up email (3-5 sentences) to send after the call that advances the deal
+
+Return ONLY valid JSON:
+{
+  "gaps": [
+    {
+      "category": "<M|E|D|D|P|I|C|C>",
+      "category_name": "<full name>",
+      "score": <int>,
+      "gap": "<str>",
+      "urgency": "<str>",
+      "actions": [
+        {
+          "action": "<what to do>",
+          "script": "<exact words to say>",
+          "target": "<who>",
+          "timing": "<when>"
+        }
+      ]
+    }
+  ],
+  "deal_killer": "<str>",
+  "power_move": "<str>",
+  "email_draft": "<str>"
+}`;
+
 export function fillTemplate(template: string, vars: Record<string, string>): string {
   let result = template;
   for (const [key, value] of Object.entries(vars)) {

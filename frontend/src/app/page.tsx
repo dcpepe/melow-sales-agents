@@ -176,6 +176,42 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Tools Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          <button
+            onClick={() => router.push("/agents")}
+            className="bg-white rounded-xl border p-4 text-left hover:border-gray-300 hover:shadow-sm transition-all group"
+          >
+            <span className="text-2xl group-hover:scale-110 inline-block transition-transform">🤖</span>
+            <h3 className="font-semibold text-gray-900 text-sm mt-2">Agent Console</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Run any agent on any deal</p>
+          </button>
+          <button
+            onClick={() => router.push("/objections")}
+            className="bg-white rounded-xl border p-4 text-left hover:border-gray-300 hover:shadow-sm transition-all group"
+          >
+            <span className="text-2xl group-hover:scale-110 inline-block transition-transform">🛡️</span>
+            <h3 className="font-semibold text-gray-900 text-sm mt-2">Objection Handling</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Scripts for every objection</p>
+          </button>
+          <button
+            onClick={() => router.push("/qualification")}
+            className="bg-white rounded-xl border p-4 text-left hover:border-gray-300 hover:shadow-sm transition-all group"
+          >
+            <span className="text-2xl group-hover:scale-110 inline-block transition-transform">📝</span>
+            <h3 className="font-semibold text-gray-900 text-sm mt-2">Qualification Sheet</h3>
+            <p className="text-xs text-gray-500 mt-0.5">MEDPICC questions cheat sheet</p>
+          </button>
+          <button
+            onClick={() => router.push("/coaching")}
+            className="bg-white rounded-xl border p-4 text-left hover:border-gray-300 hover:shadow-sm transition-all group"
+          >
+            <span className="text-2xl group-hover:scale-110 inline-block transition-transform">😎</span>
+            <h3 className="font-semibold text-gray-900 text-sm mt-2">Frank&apos;s Room</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Coaching from Frank</p>
+          </button>
+        </div>
+
         {/* Global Intelligence */}
         <GlobalIntelligence />
 

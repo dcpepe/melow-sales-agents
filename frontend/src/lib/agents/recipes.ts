@@ -147,4 +147,90 @@ Return ONLY valid JSON:
   "team_coaching": ["<skill gap>"]
 }`,
   },
+
+  objection_handler: {
+    name: "Objection Handler",
+    description: "Generate responses to common and deal-specific objections",
+    outputFormat: "json",
+    instructions: `You are a world-class objection handling coach for enterprise sales. Analyze the deal context and generate a comprehensive objection handling playbook.
+
+Generate two sections:
+
+1. DEAL-SPECIFIC OBJECTIONS — Based on what you see in the transcript and deal data, what objections has this prospect raised or is likely to raise? For each:
+   - The objection (in the prospect's words)
+   - Why they're raising it (the real concern behind it)
+   - The response framework (acknowledge → reframe → evidence → question)
+   - Exact script to use
+   - A "trap question" — a follow-up that turns the objection into an opportunity
+
+2. COMMON OBJECTIONS — The universal objections every sales rep faces. For each:
+   - The objection
+   - The wrong response (what most reps say)
+   - The right response with exact script
+   - When to use it
+
+Return ONLY valid JSON:
+{
+  "deal_specific": [
+    {
+      "objection": "<what they say>",
+      "real_concern": "<what they actually mean>",
+      "response_framework": "<acknowledge, reframe, evidence, question>",
+      "script": "<exact words>",
+      "trap_question": "<follow-up question>"
+    }
+  ],
+  "common": [
+    {
+      "objection": "<what they say>",
+      "wrong_response": "<what NOT to say>",
+      "right_response": "<what TO say>",
+      "when_to_use": "<context>"
+    }
+  ]
+}`,
+  },
+
+  qualification_sheet: {
+    name: "Qualification Cheat Sheet",
+    description: "Qualification questions organized by MEDPICC category",
+    outputFormat: "json",
+    instructions: `You are a sales qualification expert. Generate a cheat sheet of qualification questions organized by MEDPICC category, tailored to this specific deal.
+
+For each MEDPICC category:
+- What we already know (from the transcripts)
+- What's still missing (gaps)
+- 3-5 questions to ask, ranked by priority
+- For each question: the exact phrasing AND what insight you're trying to extract
+
+Also generate:
+- "killer_questions": 3 questions that, if answered well, dramatically increase win probability
+- "disqualification_signals": 3 things that would indicate this deal should be deprioritized
+
+Return ONLY valid JSON:
+{
+  "categories": [
+    {
+      "letter": "M|E|D|D|P|I|C|C",
+      "name": "<full name>",
+      "current_score": <0-5>,
+      "known": ["<what we know>"],
+      "gaps": ["<what's missing>"],
+      "questions": [
+        {
+          "question": "<exact phrasing>",
+          "insight": "<what you learn from the answer>",
+          "priority": <1-5>
+        }
+      ]
+    }
+  ],
+  "killer_questions": [
+    { "question": "<exact phrasing>", "why": "<why this matters>" }
+  ],
+  "disqualification_signals": [
+    { "signal": "<what to watch for>", "meaning": "<what it indicates>" }
+  ]
+}`,
+  },
 };

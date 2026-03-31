@@ -5,31 +5,12 @@ import { useRouter } from "next/navigation";
 import { Deal, listDeals, deleteDeal } from "@/lib/api";
 import TeamSelector from "@/components/TeamSelector";
 import DealEvolutionChart from "@/components/DealEvolutionChart";
+import MedpiccBars from "@/components/MedpiccBars";
 import { getMemberByName } from "@/lib/team";
 
 type Filter = "all" | "high" | "medium" | "low";
 
-const MEDPICC_LABELS: Record<string, string> = {
-  metrics: "M",
-  economic_buyer: "E",
-  decision_criteria: "D",
-  decision_process: "D",
-  paper_process: "P",
-  identify_pain: "I",
-  champion: "C",
-  competition: "C",
-};
 
-const MEDPICC_FULL: Record<string, string> = {
-  metrics: "Metrics",
-  economic_buyer: "Economic Buyer",
-  decision_criteria: "Decision Criteria",
-  decision_process: "Decision Process",
-  paper_process: "Paper Process",
-  identify_pain: "Identify Pain",
-  champion: "Champion",
-  competition: "Competition",
-};
 
 export default function DealsPage() {
   const router = useRouter();
@@ -291,29 +272,7 @@ export default function DealsPage() {
                           {/* MEDPICC Breakdown */}
                           <div className="bg-white rounded-xl border p-5">
                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">MEDPICC Breakdown</h4>
-                            <div className="space-y-2">
-                              {Object.entries(MEDPICC_FULL).map(([key, label]) => {
-                                const cat = deal.medpicc_breakdown?.[key];
-                                const score = cat?.score ?? (deal.latest_medpicc_categories?.[key] ?? 0);
-                                const bg = score >= 4 ? "bg-green-500" : score >= 2 ? "bg-yellow-400" : "bg-red-500";
-                                return (
-                                  <div key={key}>
-                                    <div className="flex items-center justify-between mb-1">
-                                      <div className="flex items-center gap-2">
-                                        <span className={`w-6 h-6 ${bg} rounded text-[10px] font-bold text-white flex items-center justify-center`}>
-                                          {MEDPICC_LABELS[key]}
-                                        </span>
-                                        <span className="text-sm text-gray-700">{label}</span>
-                                      </div>
-                                      <span className="text-sm font-bold text-gray-900">{score}/5</span>
-                                    </div>
-                                    {cat?.summary && (
-                                      <p className="text-xs text-gray-500 ml-8 mb-1">{cat.summary}</p>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            <MedpiccBars categories={deal.latest_medpicc_categories || {}} />
                           </div>
 
                           {/* Evolution Chart */}

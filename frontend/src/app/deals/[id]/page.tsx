@@ -9,6 +9,7 @@ import ChatSidebar from "@/components/ChatSidebar";
 import DealHeader from "@/components/DealHeader";
 import MeetingPrepTab from "@/components/MeetingPrepTab";
 import AgentRunner from "@/components/AgentRunner";
+import MedpiccBars from "@/components/MedpiccBars";
 
 type Tab = "overview" | "calls" | "prep" | "actions" | "dealroom";
 
@@ -153,30 +154,17 @@ export default function DealIntelligencePage() {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            {/* MEDPICC Current State */}
+            {/* MEDPICC Current State — Level Bars */}
             <div className="bg-white rounded-xl border p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Current MEDPICC State</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {Object.entries(MEDPICC_LABELS).map(([key, label]) => {
-                  const score = deal.latest_medpicc_categories?.[key] ?? 0;
-                  const bg = score >= 4 ? "bg-green-500" : score >= 2 ? "bg-yellow-400" : "bg-red-500";
-                  return (
-                    <div key={key} className="text-center p-3 bg-gray-50 rounded-lg">
-                      <div className={`w-10 h-10 ${bg} rounded-lg flex items-center justify-center text-white font-bold text-lg mx-auto mb-2`}>
-                        {score}
-                      </div>
-                      <p className="text-xs text-gray-600">{label}</p>
-                    </div>
-                  );
-                })}
-              </div>
+              <MedpiccBars categories={deal.latest_medpicc_categories || {}} />
             </div>
 
             {/* MEDPICC Progression */}
             {sortedAnalyses.length > 1 && (
               <div className="bg-white rounded-xl border p-6">
                 <h3 className="font-semibold text-gray-900 mb-4">MEDPICC Progression</h3>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {Object.entries(MEDPICC_LABELS).map(([key, label]) => {
                     const scores = sortedAnalyses.map((a) => {
                       const medpicc = a.medpicc as unknown as Record<string, unknown>;
@@ -188,29 +176,37 @@ export default function DealIntelligencePage() {
                     const trend = last - first;
                     return (
                       <div key={key} className="flex items-center gap-3">
-                        <span className="text-sm text-gray-600 w-32">{label}</span>
-                        <div className="flex gap-1 flex-1">
+                        <span className="text-xs font-medium text-gray-500 w-28 truncate">{label}</span>
+                        <div className="flex gap-1.5 flex-1 items-center">
                           {scores.map((s, i) => (
-                            <div
-                              key={i}
-                              className={`h-6 flex-1 rounded ${
-                                s >= 4 ? "bg-green-500" : s >= 2 ? "bg-yellow-400" : "bg-red-500"
-                              } flex items-center justify-center`}
-                            >
-                              <span className="text-[10px] text-white font-bold">{s}</span>
+                            <div key={i} className="flex-1 flex items-end gap-px">
+                              {[1, 2, 3, 4, 5].map((level) => (
+                                <div
+                                  key={level}
+                                  className={`flex-1 h-4 rounded-sm ${
+                                    level <= s
+                                      ? s <= 1 ? "bg-red-500" : s <= 2 ? "bg-orange-400" : s <= 3 ? "bg-yellow-400" : s <= 4 ? "bg-green-400" : "bg-green-500"
+                                      : "bg-gray-100"
+                                  }`}
+                                />
+                              ))}
                             </div>
                           ))}
                         </div>
-                        <span className={`text-sm font-semibold w-10 text-right ${
+                        <span className={`text-xs font-bold w-8 text-right ${
                           trend > 0 ? "text-green-600" : trend < 0 ? "text-red-600" : "text-gray-400"
                         }`}>
-                          {trend > 0 ? `+${trend}` : trend === 0 ? "—" : trend}
+                          {trend > 0 ? `↑${trend}` : trend < 0 ? `↓${Math.abs(trend)}` : "—"}
                         </span>
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-400 mt-3">Each block = one call, left to right = oldest to newest</p>
+                <div className="flex items-center gap-2 mt-3 text-[10px] text-gray-400">
+                  <span>← Oldest call</span>
+                  <div className="flex-1 border-t border-dashed border-gray-200" />
+                  <span>Latest call →</span>
+                </div>
               </div>
             )}
 

@@ -72,6 +72,17 @@ export default function DealIntelligencePage() {
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
+  // Extract detailed MEDPICC breakdown from latest analysis
+  const latestAnalysis = analyses[0];
+  const medpiccBreakdown: Record<string, { score: number; summary: string; missing_info: string[] }> = {};
+  if (latestAnalysis) {
+    const mp = latestAnalysis.medpicc as unknown as Record<string, unknown>;
+    for (const key of ["metrics", "economic_buyer", "decision_criteria", "decision_process", "paper_process", "identify_pain", "champion", "competition"]) {
+      const cat = mp?.[key] as { score: number; summary: string; missing_info: string[] } | undefined;
+      if (cat) medpiccBreakdown[key] = { score: cat.score, summary: cat.summary, missing_info: cat.missing_info || [] };
+    }
+  }
+
   // Aggregate open questions from all calls
   const allOpenQuestions = analyses.flatMap((a) =>
     (a.call_analysis?.open_questions || []).map((q) => ({
@@ -157,7 +168,7 @@ export default function DealIntelligencePage() {
             {/* MEDPICC Current State — Level Bars */}
             <div className="bg-white rounded-xl border p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Current MEDPICC State</h3>
-              <MedpiccBars categories={deal.latest_medpicc_categories || {}} />
+              <MedpiccBars categories={deal.latest_medpicc_categories || {}} breakdown={medpiccBreakdown} />
             </div>
 
             {/* MEDPICC Progression */}

@@ -272,7 +272,7 @@ export default function DealsPage() {
                           {/* MEDPICC Breakdown */}
                           <div className="bg-white rounded-xl border p-5">
                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">MEDPICC Breakdown</h4>
-                            <MedpiccBars categories={deal.latest_medpicc_categories || {}} />
+                            <MedpiccBars categories={deal.latest_medpicc_categories || {}} breakdown={deal.medpicc_breakdown as Record<string, { score: number; summary: string; missing_info: string[] }> | undefined} />
                           </div>
 
                           {/* Evolution Chart */}

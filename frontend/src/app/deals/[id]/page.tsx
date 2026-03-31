@@ -10,19 +10,10 @@ import DealHeader from "@/components/DealHeader";
 import MeetingPrepTab from "@/components/MeetingPrepTab";
 import AgentRunner from "@/components/AgentRunner";
 import MedpiccBars from "@/components/MedpiccBars";
+import MedpiccProgression from "@/components/MedpiccProgression";
 
 type Tab = "overview" | "calls" | "prep" | "actions" | "dealroom";
 
-const MEDPICC_LABELS: Record<string, string> = {
-  metrics: "Metrics",
-  economic_buyer: "Economic Buyer",
-  decision_criteria: "Decision Criteria",
-  decision_process: "Decision Process",
-  paper_process: "Paper Process",
-  identify_pain: "Identify Pain",
-  champion: "Champion",
-  competition: "Competition",
-};
 
 export default function DealIntelligencePage() {
   const params = useParams();
@@ -171,54 +162,12 @@ export default function DealIntelligencePage() {
               <MedpiccBars categories={deal.latest_medpicc_categories || {}} breakdown={medpiccBreakdown} />
             </div>
 
-            {/* MEDPICC Progression */}
+            {/* MEDPICC Progression — clickable per category */}
             {sortedAnalyses.length > 1 && (
-              <div className="bg-white rounded-xl border p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">MEDPICC Progression</h3>
-                <div className="space-y-2.5">
-                  {Object.entries(MEDPICC_LABELS).map(([key, label]) => {
-                    const scores = sortedAnalyses.map((a) => {
-                      const medpicc = a.medpicc as unknown as Record<string, unknown>;
-                      const cat = medpicc?.[key] as Record<string, unknown> | undefined;
-                      return (cat?.score as number) ?? 0;
-                    });
-                    const first = scores[0];
-                    const last = scores[scores.length - 1];
-                    const trend = last - first;
-                    return (
-                      <div key={key} className="flex items-center gap-3">
-                        <span className="text-xs font-medium text-gray-500 w-28 truncate">{label}</span>
-                        <div className="flex gap-1.5 flex-1 items-center">
-                          {scores.map((s, i) => (
-                            <div key={i} className="flex-1 flex items-end gap-px">
-                              {[1, 2, 3, 4, 5].map((level) => (
-                                <div
-                                  key={level}
-                                  className={`flex-1 h-4 rounded-sm ${
-                                    level <= s
-                                      ? s <= 1 ? "bg-red-500" : s <= 2 ? "bg-orange-400" : s <= 3 ? "bg-yellow-400" : s <= 4 ? "bg-green-400" : "bg-green-500"
-                                      : "bg-gray-100"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                        <span className={`text-xs font-bold w-8 text-right ${
-                          trend > 0 ? "text-green-600" : trend < 0 ? "text-red-600" : "text-gray-400"
-                        }`}>
-                          {trend > 0 ? `↑${trend}` : trend < 0 ? `↓${Math.abs(trend)}` : "—"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center gap-2 mt-3 text-[10px] text-gray-400">
-                  <span>← Oldest call</span>
-                  <div className="flex-1 border-t border-dashed border-gray-200" />
-                  <span>Latest call →</span>
-                </div>
-              </div>
+              <MedpiccProgression
+                sortedAnalyses={sortedAnalyses}
+                breakdown={medpiccBreakdown}
+              />
             )}
 
             {/* Score Trend */}

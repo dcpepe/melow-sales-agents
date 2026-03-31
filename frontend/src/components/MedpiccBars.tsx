@@ -80,11 +80,13 @@ export default function MedpiccBars({ categories, breakdown, compact = false }: 
             {/* Bar row — clickable */}
             <button
               onClick={() => setExpanded(isExpanded ? null : key)}
-              className={`w-full flex items-center gap-3 py-2 px-1 rounded-lg transition-colors ${isExpanded ? "bg-gray-50" : "hover:bg-gray-50"}`}
+              className={`w-full flex items-center gap-3 py-2.5 px-2 rounded-lg transition-all cursor-pointer ${isExpanded ? "bg-blue-50 border border-blue-200" : "hover:bg-gray-50 border border-transparent"}`}
             >
-              <div className="w-28 flex items-center gap-2 flex-shrink-0">
-                <span className="text-xs font-bold text-gray-400 w-3">{letter}</span>
-                <span className="text-sm text-gray-700 truncate">{name}</span>
+              <div className="w-32 flex items-center gap-2 flex-shrink-0">
+                <span className={`text-xs font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
+                  isExpanded ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
+                }`}>{letter}</span>
+                <span className={`text-sm font-medium ${isExpanded ? "text-blue-900" : "text-gray-700"}`}>{name}</span>
               </div>
               <div className="flex gap-1 flex-1">
                 {[1, 2, 3, 4, 5].map((level) => (

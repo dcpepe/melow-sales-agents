@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Deal, listDeals, deleteDeal } from "@/lib/api";
 import TeamSelector from "@/components/TeamSelector";
-import DealEvolutionChart from "@/components/DealEvolutionChart";
 import MedpiccBars from "@/components/MedpiccBars";
 import { getMemberByName } from "@/lib/team";
 
@@ -268,20 +267,13 @@ export default function DealsPage() {
                     {/* Expanded Section */}
                     {isExpanded && (
                       <div className="border-t px-5 py-5 bg-gray-50/50 space-y-5">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                          {/* MEDPICC Breakdown */}
-                          <div className="bg-white rounded-xl border p-5">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">MEDPICC Breakdown</h4>
-                            <MedpiccBars categories={deal.latest_medpicc_categories || {}} breakdown={deal.medpicc_breakdown as Record<string, { score: number; summary: string; missing_info: string[] }> | undefined} />
-                          </div>
-
-                          {/* Evolution Chart */}
-                          {deal.medpicc_history && deal.medpicc_history.length > 0 && (
-                            <DealEvolutionChart history={deal.medpicc_history} />
-                          )}
+                        {/* MEDPICC Breakdown — full width */}
+                        <div className="bg-white rounded-xl border p-5">
+                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">MEDPICC Breakdown</h4>
+                          <MedpiccBars categories={deal.latest_medpicc_categories || {}} breakdown={deal.medpicc_breakdown as Record<string, { score: number; summary: string; missing_info: string[] }> | undefined} />
                         </div>
 
-                        {/* Risks + Actions */}
+                        {/* Risks + Actions — full width */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {deal.key_mistakes && deal.key_mistakes.length > 0 && (
                             <div className="bg-white rounded-xl border border-l-4 border-l-red-500 p-4">

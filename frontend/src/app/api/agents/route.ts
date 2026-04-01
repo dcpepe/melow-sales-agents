@@ -25,13 +25,12 @@ export async function POST(req: NextRequest) {
     // Build context based on recipe type
     let context: { deal_id?: string; raw_context?: string };
 
-    if (recipe === "global_intelligence") {
-      const globalCtx = await buildGlobalContext();
-      context = { raw_context: globalCtx };
-    } else if (deal_id) {
+    if (deal_id) {
       context = { deal_id };
     } else {
-      return NextResponse.json({ error: "deal_id required for this recipe" }, { status: 400 });
+      // No deal_id — use global context (works for global_intelligence, objection_handler, etc.)
+      const globalCtx = await buildGlobalContext();
+      context = { raw_context: globalCtx };
     }
 
     const result = await runAgent(recipe, context, (model as ModelTier) || "fast");

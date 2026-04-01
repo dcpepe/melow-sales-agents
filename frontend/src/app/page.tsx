@@ -21,11 +21,11 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="border-b border-white/5">
+      <header className="border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-white text-sm font-semibold tracking-tight">melow</span>
+          <span className="text-gray-900 text-sm font-semibold tracking-tight">melow</span>
           <TeamSelector />
         </div>
       </header>
@@ -33,8 +33,8 @@ export default function Home() {
       {/* Center content */}
       <main className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md w-full -mt-20">
-          <p className="text-white/40 text-sm mb-1">{greeting}</p>
-          <h1 className="text-white text-3xl font-bold mb-10">What are we working on?</h1>
+          <p className="text-gray-400 text-sm mb-1">{greeting}</p>
+          <h1 className="text-gray-900 text-3xl font-bold mb-10">What are we working on?</h1>
 
           <div className="space-y-2">
             {SUITES.map((suite) => (
@@ -44,17 +44,17 @@ export default function Home() {
                 disabled={!suite.active}
                 className={`w-full flex items-center justify-between px-5 py-4 rounded-xl text-left transition-all ${
                   suite.active
-                    ? "bg-white/5 hover:bg-white/10 text-white cursor-pointer"
-                    : "bg-white/[0.02] text-white/20 cursor-default"
+                    ? "bg-gray-50 hover:bg-gray-100 text-gray-900 cursor-pointer"
+                    : "bg-gray-50/50 text-gray-300 cursor-default"
                 }`}
               >
                 <span className="font-medium">{suite.name}</span>
                 {suite.active ? (
-                  <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 ) : (
-                  <span className="text-[11px] text-white/20">Soon</span>
+                  <span className="text-[11px] text-gray-300">Soon</span>
                 )}
               </button>
             ))}

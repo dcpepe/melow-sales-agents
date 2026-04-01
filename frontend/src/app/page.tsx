@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import TeamSelector from "@/components/TeamSelector";
+import { SalesIcon, CustomerSuccessIcon, ProductIcon, OperationsIcon, BrainIcon } from "@/components/icons/SuiteIcons";
 
 const SUITES = [
   {
     id: "sales",
     name: "Sales Intelligence",
     description: "Deal tracking, MEDPICC scoring, call analysis & coaching",
-    icon: "💰",
+    iconComponent: SalesIcon,
     color: "from-emerald-500 to-green-600",
     hoverColor: "hover:from-emerald-400 hover:to-green-500",
     shadowColor: "shadow-emerald-500/20",
@@ -21,7 +22,7 @@ const SUITES = [
     id: "customer-success",
     name: "Customer Success",
     description: "Health scores, churn risk, expansion tracking & playbooks",
-    icon: "🤝",
+    iconComponent: CustomerSuccessIcon,
     color: "from-blue-500 to-indigo-600",
     hoverColor: "hover:from-blue-400 hover:to-indigo-500",
     shadowColor: "shadow-blue-500/20",
@@ -33,7 +34,7 @@ const SUITES = [
     id: "product",
     name: "Product",
     description: "Feature requests, roadmap intelligence & customer feedback",
-    icon: "🚀",
+    iconComponent: ProductIcon,
     color: "from-purple-500 to-violet-600",
     hoverColor: "hover:from-purple-400 hover:to-violet-500",
     shadowColor: "shadow-purple-500/20",
@@ -45,7 +46,7 @@ const SUITES = [
     id: "operations",
     name: "Operations",
     description: "Process optimization, workflow automation & team metrics",
-    icon: "⚙️",
+    iconComponent: OperationsIcon,
     color: "from-orange-500 to-red-600",
     hoverColor: "hover:from-orange-400 hover:to-red-500",
     shadowColor: "shadow-orange-500/20",
@@ -73,9 +74,7 @@ export default function Home() {
       <header className="border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-white/20 to-white/5 rounded-xl flex items-center justify-center border border-white/10">
-              <span className="text-xl">🧠</span>
-            </div>
+            <BrainIcon size={40} />
             <div>
               <h1 className="text-lg font-bold">Melow</h1>
               <p className="text-xs text-gray-400">Middle Management Agent Suite</p>
@@ -121,7 +120,9 @@ export default function Home() {
 
               <div className="relative z-10">
                 <div className="flex items-start justify-between mb-6">
-                  <span className="text-5xl group-hover:scale-110 transition-transform inline-block">{suite.icon}</span>
+                  <div className="group-hover:scale-110 transition-transform">
+                    <suite.iconComponent size={56} />
+                  </div>
                   {suite.active ? (
                     <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse" />

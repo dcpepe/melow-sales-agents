@@ -7,6 +7,7 @@ import TeamSelector from "@/components/TeamSelector";
 import FrankGolden from "@/components/FrankGolden";
 import GlobalIntelligence from "@/components/GlobalIntelligence";
 import { getMemberByName } from "@/lib/team";
+import { SalesIcon } from "@/components/icons/SuiteIcons";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -113,7 +114,7 @@ export default function Dashboard() {
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">💰</span>
+                <SalesIcon size={32} />
                 <h1 className="text-2xl font-bold text-gray-900">Sales Intelligence</h1>
               </div>
               <p className="text-sm text-gray-500 mt-0.5">Deal tracking, MEDPICC scoring &amp; deal rooms</p>

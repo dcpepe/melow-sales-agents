@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { listGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
+import { listAllGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
 import TeamSelector from "@/components/TeamSelector";
 import FrankGolden from "@/components/FrankGolden";
 import { getMemberByName } from "@/lib/team";
@@ -13,29 +13,13 @@ export default function SalesDashboard() {
   const [granolaNotes, setGranolaNotes] = useState<GranolaNoteListItem[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(true);
   const [loadingNotes, setLoadingNotes] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMoreNotes, setHasMoreNotes] = useState(false);
-  const [notesCursor, setNotesCursor] = useState<string | undefined>();
   const [importingNote, setImportingNote] = useState<string | null>(null);
   const [noteSearch, setNoteSearch] = useState("");
 
   useEffect(() => {
     listDeals().then(setRecentDeals).catch(() => {}).finally(() => setLoadingDeals(false));
-    listGranolaNotes()
-      .then((data) => { setGranolaNotes(data.notes || []); setHasMoreNotes(data.hasMore); setNotesCursor(data.cursor); })
-      .catch(() => {}).finally(() => setLoadingNotes(false));
+    listAllGranolaNotes().then(setGranolaNotes).catch(() => {}).finally(() => setLoadingNotes(false));
   }, []);
-
-  async function loadMoreNotes() {
-    if (!notesCursor || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const data = await listGranolaNotes(undefined, notesCursor);
-      setGranolaNotes((prev) => [...prev, ...(data.notes || [])]);
-      setHasMoreNotes(data.hasMore);
-      setNotesCursor(data.cursor);
-    } catch {} finally { setLoadingMore(false); }
-  }
 
   async function handleImportNote(noteId: string) {
     setImportingNote(noteId);
@@ -201,10 +185,8 @@ export default function SalesDashboard() {
               ))
             )}
           </div>
-          {hasMoreNotes && !noteSearch && (
-            <button onClick={loadMoreNotes} disabled={loadingMore} className="w-full text-sm text-gray-400 hover:text-gray-900 font-medium py-3 disabled:opacity-50">
-              {loadingMore ? "Loading..." : "Load more"}
-            </button>
+          {false && (
+            <span></span>
           )}
         </div>
       </main>

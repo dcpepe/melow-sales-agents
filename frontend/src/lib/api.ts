@@ -325,6 +325,13 @@ export async function listGranolaNotes(createdAfter?: string, cursor?: string): 
   return res.json();
 }
 
+export async function listAllGranolaNotes(): Promise<GranolaNoteListItem[]> {
+  const res = await fetch(`${API_BASE}/granola/notes?all=true`);
+  if (!res.ok) throw new Error("Failed to fetch Granola notes");
+  const data = await res.json();
+  return data.notes || [];
+}
+
 export async function getGranolaNoteDetail(id: string): Promise<GranolaNoteDetail> {
   const res = await fetch(`${API_BASE}/granola/notes/${id}`);
   if (!res.ok) throw new Error("Failed to fetch note");

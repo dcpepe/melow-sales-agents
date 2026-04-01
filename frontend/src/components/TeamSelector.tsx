@@ -36,19 +36,18 @@ export default function TeamSelector() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 border rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
       >
         {current ? (
           <>
-            <div className={`w-7 h-7 ${current.color} rounded-full flex items-center justify-center text-white text-xs font-bold`}>
+            <div className={`w-6 h-6 ${current.color} rounded-full flex items-center justify-center text-white text-[10px] font-bold`}>
               {current.initials}
             </div>
-            <span className="text-sm text-gray-700 hidden sm:block">{current.name.split(" ")[0]}</span>
+            <span className="text-sm text-current opacity-70 hidden sm:block">{current.name.split(" ")[0]}</span>
           </>
         ) : (
           <>
-            <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 text-xs">?</div>
-            <span className="text-sm text-gray-500">Who are you?</span>
+            <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white/40 text-[10px]">?</div>
           </>
         )}
         <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -8,7 +8,7 @@ import {
   fillTemplate,
 } from "@/lib/server/prompts";
 import { saveAnalysis, saveDeal, addDealToIndex, addAnalysisToDeal } from "@/lib/server/storage";
-import { recomputeDealMetrics, appendMedpiccSnapshot } from "@/lib/server/deal-analysis-service";
+import { appendMedpiccSnapshot } from "@/lib/server/deal-analysis-service";
 
 export const maxDuration = 120;
 
@@ -91,13 +91,13 @@ export async function POST(req: NextRequest) {
     }
 
     const contextForLLM = participants
-      ? `${labeledTranscript}\n${participants}`
-      : labeledTranscript;
+      ? `${labeledTranscript.slice(0, 12000)}\n${participants}`
+      : labeledTranscript.slice(0, 12000);
 
-    // Run call analysis and MEDPICC in parallel
+    // Run call analysis (standard model) and MEDPICC (fast model) in parallel
     const [callAnalysis, medpicc] = await Promise.all([
       callClaude(fillTemplate(CALL_ANALYSIS_PROMPT, { labeled_transcript: contextForLLM })),
-      callClaude(fillTemplate(MEDPICC_PROMPT, { labeled_transcript: contextForLLM })),
+      callClaude(fillTemplate(MEDPICC_PROMPT, { labeled_transcript: contextForLLM }), true),
     ]);
 
     // Save analysis with deal_id
@@ -130,9 +130,6 @@ export async function POST(req: NextRequest) {
       deal_probability: medpiccData.deal_probability as number,
       medpicc_categories: medpiccCategories,
     });
-
-    // Recompute deal metrics via service layer
-    await recomputeDealMetrics(resolvedDealId);
 
     // Append MEDPICC snapshot to history (never overwrites)
     const overallScore = (medpiccData.overall_score as number) ?? 0;

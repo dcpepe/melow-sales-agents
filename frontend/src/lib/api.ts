@@ -337,3 +337,32 @@ export async function getGranolaNoteDetail(id: string): Promise<GranolaNoteDetai
   if (!res.ok) throw new Error("Failed to fetch note");
   return res.json();
 }
+
+// Gmail
+
+export interface GmailMessage {
+  id: string;
+  threadId: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  snippet: string;
+  body: string;
+}
+
+export async function searchEmails(query: string, max = 20): Promise<GmailMessage[]> {
+  const res = await fetch(`${API_BASE}/gmail/messages?q=${encodeURIComponent(query)}&max=${max}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.messages || [];
+}
+
+export async function sendEmailApi(to: string, subject: string, body: string, threadId?: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/gmail/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ to, subject, body, thread_id: threadId }),
+  });
+  return res.ok;
+}

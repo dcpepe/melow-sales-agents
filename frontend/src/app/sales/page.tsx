@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { listAllGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, Deal, listDeals } from "@/lib/api";
 import TeamSelector from "@/components/TeamSelector";
 import FrankGolden from "@/components/FrankGolden";
+import GmailConnect from "@/components/GmailConnect";
 import { getMemberByName } from "@/lib/team";
 
 export default function SalesDashboard() {
@@ -60,6 +61,7 @@ export default function SalesDashboard() {
             <span className="text-gray-900 text-sm font-semibold">Sales</span>
           </div>
           <div className="flex items-center gap-2">
+            <GmailConnect />
             <TeamSelector />
             <button onClick={() => router.push("/analyze")} className="text-sm text-gray-900 font-medium px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
               + New Deal

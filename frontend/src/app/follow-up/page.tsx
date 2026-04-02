@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Deal, listDeals, listAllGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, analyzeTranscript, runAgentApi } from "@/lib/api";
+import { Deal, listDeals, listAllGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, analyzeTranscript, runAgentApi, sendEmailApi } from "@/lib/api";
 import { Suspense } from "react";
 
 interface EmailVariant {
@@ -58,6 +58,18 @@ function FollowUpContent() {
   const [newCompany, setNewCompany] = useState("");
   const [transcript, setTranscript] = useState("");
   const [creating, setCreating] = useState(false);
+  const [sendingIdx, setSendingIdx] = useState<number | null>(null);
+  const [sentIdx, setSentIdx] = useState<number | null>(null);
+  const [sendTo, setSendTo] = useState("");
+
+  async function handleSend(idx: number, variant: EmailVariant) {
+    if (!sendTo) return;
+    setSendingIdx(idx);
+    try {
+      const ok = await sendEmailApi(sendTo, variant.subject, variant.body);
+      if (ok) { setSentIdx(idx); setTimeout(() => setSentIdx(null), 3000); }
+    } catch {} finally { setSendingIdx(null); }
+  }
 
   useEffect(() => { listDeals().then(setDeals).catch(() => {}); }, []);
 
@@ -370,6 +382,23 @@ function FollowUpContent() {
                     <div className="px-5 py-4">
                       <p className="text-xs text-gray-400 mb-2">Subject: <span className="text-gray-700 font-medium">{variant.subject}</span></p>
                       <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{variant.body}</div>
+                    </div>
+                    {/* Send bar */}
+                    <div className="px-5 py-3 border-t border-gray-50 flex items-center gap-2">
+                      <input
+                        type="email"
+                        placeholder="recipient@company.com"
+                        value={sendTo}
+                        onChange={(e) => setSendTo(e.target.value)}
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      />
+                      <button
+                        onClick={() => handleSend(i, variant)}
+                        disabled={!sendTo || sendingIdx === i}
+                        className="px-4 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-20 transition-colors"
+                      >
+                        {sentIdx === i ? "Sent!" : sendingIdx === i ? "Sending..." : "Send"}
+                      </button>
                     </div>
                   </div>
                 ))}

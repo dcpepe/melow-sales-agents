@@ -233,8 +233,8 @@ export default function DealIntelligencePage() {
                   onClick={() => router.push(`/follow-up?deal_id=${id}`)}
                   className="w-full mb-4 px-5 py-4 rounded-xl bg-gray-900 text-white text-left hover:bg-gray-800 transition-colors"
                 >
-                  <p className="text-sm font-semibold">MEDDPICC Follow-Up</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Deal assessment + strategic email variants</p>
+                  <p className="text-sm font-semibold">MEDDPICC Agent</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Deal assessment, gap analysis + strategic emails</p>
                 </button>
 
                 <h3 className="font-semibold text-gray-900 mb-3">More Agents</h3>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Deal, listDeals, runAgentApi } from "@/lib/api";
+import { Deal, listDeals, listAllGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, analyzeTranscript, runAgentApi } from "@/lib/api";
 import { Suspense } from "react";
 
 interface EmailVariant {
@@ -49,8 +49,59 @@ function FollowUpContent() {
   const [error, setError] = useState<string | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [expandedField, setExpandedField] = useState<string | null>(null);
+  const [showNewDeal, setShowNewDeal] = useState(false);
+  const [granolaNotes, setGranolaNotes] = useState<GranolaNoteListItem[]>([]);
+  const [granolaSearch, setGranolaSearch] = useState("");
+  const [loadingGranola, setLoadingGranola] = useState(false);
+  const [importingNote, setImportingNote] = useState<string | null>(null);
+  const [newDealName, setNewDealName] = useState("");
+  const [newCompany, setNewCompany] = useState("");
+  const [transcript, setTranscript] = useState("");
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => { listDeals().then(setDeals).catch(() => {}); }, []);
+
+  function openNewDeal() {
+    setShowNewDeal(true);
+    if (granolaNotes.length === 0) {
+      setLoadingGranola(true);
+      listAllGranolaNotes().then(setGranolaNotes).catch(() => {}).finally(() => setLoadingGranola(false));
+    }
+  }
+
+  async function importFromGranola(noteId: string) {
+    setImportingNote(noteId);
+    try {
+      const note = await getGranolaNoteDetail(noteId);
+      let t = "";
+      if (note.transcript?.length) {
+        t = note.transcript.map((e) => `[${e.speaker.name || e.speaker.source}]: ${e.text}`).join("\n");
+      } else if (note.summary) { t = note.summary; }
+      setTranscript(t);
+      setNewDealName(note.title);
+    } catch {} finally { setImportingNote(null); }
+  }
+
+  async function createAndAnalyze() {
+    if (!transcript || !newDealName) return;
+    setCreating(true);
+    try {
+      const res = await analyzeTranscript({
+        transcript,
+        new_deal: { deal_name: newDealName, company: newCompany },
+      });
+      // Refresh deals list and select the new one
+      const updated = await listDeals();
+      setDeals(updated);
+      setSelectedDeal(res.deal_id);
+      setShowNewDeal(false);
+      setTranscript(""); setNewDealName(""); setNewCompany("");
+    } catch {} finally { setCreating(false); }
+  }
+
+  const filteredGranola = granolaSearch
+    ? granolaNotes.filter((n) => n.title.toLowerCase().includes(granolaSearch.toLowerCase()))
+    : granolaNotes;
 
   async function generate() {
     if (!selectedDeal) return;
@@ -98,11 +149,11 @@ function FollowUpContent() {
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         {/* Deal picker */}
-        <div className="flex items-end gap-3 mb-8">
+        <div className="flex items-end gap-3 mb-4">
           <div className="flex-1">
             <select
               value={selectedDeal}
-              onChange={(e) => { setSelectedDeal(e.target.value); setData(null); }}
+              onChange={(e) => { setSelectedDeal(e.target.value); setData(null); setShowNewDeal(false); }}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
             >
               <option value="">Select a deal...</option>
@@ -119,6 +170,100 @@ function FollowUpContent() {
             {loading ? "Analyzing..." : "Generate"}
           </button>
         </div>
+
+        {/* New deal toggle */}
+        {!showNewDeal ? (
+          <button onClick={openNewDeal} className="text-sm text-gray-400 hover:text-gray-900 mb-8 block">
+            + Add new deal
+          </button>
+        ) : (
+          <div className="mb-8 border border-gray-100 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-gray-900">New Deal</p>
+              <button onClick={() => setShowNewDeal(false)} className="text-xs text-gray-400 hover:text-gray-900">Cancel</button>
+            </div>
+
+            {/* Granola import */}
+            <div>
+              <div className="relative mb-2">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search Granola meetings..."
+                  value={granolaSearch}
+                  onChange={(e) => setGranolaSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 placeholder:text-gray-300"
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto space-y-0.5">
+                {loadingGranola ? (
+                  <p className="text-xs text-gray-300 py-3 text-center">Loading meetings...</p>
+                ) : filteredGranola.length === 0 ? (
+                  <p className="text-xs text-gray-300 py-3 text-center">No meetings found</p>
+                ) : (
+                  filteredGranola.slice(0, 20).map((note) => (
+                    <button
+                      key={note.id}
+                      onClick={() => importFromGranola(note.id)}
+                      disabled={importingNote === note.id}
+                      className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 flex items-center justify-between"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-900 truncate">{importingNote === note.id ? "Importing..." : note.title}</p>
+                        <p className="text-xs text-gray-400">{note.created_at ? new Date(note.created_at).toLocaleDateString() : ""}</p>
+                      </div>
+                      <svg className="w-3 h-3 text-gray-200 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Deal info + transcript */}
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Deal name"
+                value={newDealName}
+                onChange={(e) => setNewDealName(e.target.value)}
+                className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+              />
+              <input
+                type="text"
+                placeholder="Company"
+                value={newCompany}
+                onChange={(e) => setNewCompany(e.target.value)}
+                className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+              />
+            </div>
+            {transcript && (
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-400 mb-1">Transcript loaded ({Math.round(transcript.length / 1000)}k chars)</p>
+                <p className="text-xs text-gray-500 truncate">{transcript.slice(0, 150)}...</p>
+              </div>
+            )}
+            {!transcript && (
+              <textarea
+                rows={4}
+                placeholder="Or paste a transcript..."
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 resize-none"
+              />
+            )}
+            <button
+              onClick={createAndAnalyze}
+              disabled={creating || !transcript || !newDealName}
+              className="w-full py-2.5 rounded-xl text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-20 transition-colors"
+            >
+              {creating ? "Creating & analyzing..." : "Create Deal & Analyze"}
+            </button>
+          </div>
+        )}
 
         {/* Loading */}
         {loading && (

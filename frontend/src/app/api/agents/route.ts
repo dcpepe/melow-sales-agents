@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runAgent, buildGlobalContext, ModelTier } from "@/lib/agents/engine";
+import { runAgent, buildGlobalContext, buildDeepDealContext, ModelTier } from "@/lib/agents/engine";
 import { saveNewAnalysisVersion } from "@/lib/server/deal-analysis-service";
 
 export const maxDuration = 120;
@@ -25,7 +25,11 @@ export async function POST(req: NextRequest) {
     // Build context based on recipe type
     let context: { deal_id?: string; raw_context?: string };
 
-    if (deal_id) {
+    if (deal_id && recipe === "meddpicc_followup") {
+      // Deep context for MEDDPICC follow-up agent — full transcripts, detailed MEDPICC
+      const deepCtx = await buildDeepDealContext(deal_id);
+      context = { raw_context: deepCtx };
+    } else if (deal_id) {
       context = { deal_id };
     } else {
       // No deal_id — use global context (works for global_intelligence, objection_handler, etc.)

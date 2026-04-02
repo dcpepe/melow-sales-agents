@@ -228,7 +228,16 @@ export default function DealIntelligencePage() {
             {/* Agent Actions */}
             {analyses.length > 0 && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Run Agents</h3>
+                {/* MEDDPICC Follow-Up — primary action */}
+                <button
+                  onClick={() => router.push(`/follow-up?deal_id=${id}`)}
+                  className="w-full mb-4 px-5 py-4 rounded-xl bg-gray-900 text-white text-left hover:bg-gray-800 transition-colors"
+                >
+                  <p className="text-sm font-semibold">MEDDPICC Follow-Up</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Deal assessment + strategic email variants</p>
+                </button>
+
+                <h3 className="font-semibold text-gray-900 mb-3">More Agents</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <AgentRunner
                     dealId={id}

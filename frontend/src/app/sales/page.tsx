@@ -73,6 +73,7 @@ export default function SalesDashboard() {
         <div className="flex flex-wrap gap-2 mb-8">
           {[
             { label: "Deals", href: "/deals" },
+            { label: "Follow-Up", href: "/follow-up" },
             { label: "Agents", href: "/agents" },
             { label: "Objections", href: "/objections" },
             { label: "Qualification", href: "/qualification" },

@@ -123,6 +123,100 @@ export async function buildGlobalContext(): Promise<string> {
   return parts.join("\n");
 }
 
+/**
+ * Build deep deal context for the MEDDPICC follow-up agent.
+ * Includes full MEDPICC notes, complete transcripts, and deal metadata.
+ */
+export async function buildDeepDealContext(dealId: string): Promise<string> {
+  const deal = await loadDeal(dealId);
+  if (!deal) throw new Error("Deal not found");
+
+  const parts: string[] = [];
+
+  // Deal metadata
+  parts.push(`DEAL CONTEXT:`);
+  parts.push(`Account: ${deal.deal_name} at ${deal.company}`);
+  parts.push(`Stage: ${deal.stage || "Unknown"}`);
+  parts.push(`Owner: ${deal.owner || "Unassigned"}`);
+  parts.push(`Notes: ${deal.notes || "None"}`);
+
+  // Calculate days since last touch
+  const lastUpdated = deal.last_updated_at || deal.updated_at;
+  if (lastUpdated) {
+    const days = Math.floor((Date.now() - new Date(lastUpdated as string).getTime()) / (1000 * 60 * 60 * 24));
+    parts.push(`Last updated: ${days} days ago (${lastUpdated})`);
+  }
+  parts.push(`Total calls: ${deal.call_count}`);
+
+  // MEDPICC scores with full notes
+  const cats = (deal.latest_medpicc_categories as Record<string, number>) || {};
+  parts.push(`\nMEDDPICC CURRENT SCORES:`);
+  for (const [key, score] of Object.entries(cats)) {
+    parts.push(`  ${key}: ${score}/5`);
+  }
+
+  // MEDPICC history
+  const history = (deal.medpicc_history as { score: number; win_probability: number; timestamp: string; source: string }[]) || [];
+  if (history.length > 0) {
+    parts.push(`\nSCORE HISTORY (${history.length} snapshots):`);
+    for (const h of history) {
+      parts.push(`  ${new Date(h.timestamp).toLocaleDateString()}: MEDPICC ${h.score}%, Win ${h.win_probability}% (${h.source})`);
+    }
+  }
+
+  // Load ALL analyses (not just 3) for deep context
+  const analysisIds = (deal.analysis_ids as string[]) || [];
+  if (analysisIds.length > 0) {
+    const pipeline = kv.pipeline();
+    for (const id of analysisIds.slice(0, 5)) pipeline.get(`analysis:${id}`);
+    const analyses = (await pipeline.exec()).filter(Boolean) as Record<string, unknown>[];
+
+    // Full MEDPICC assessment from latest analysis
+    if (analyses.length > 0) {
+      const latestMp = analyses[0].medpicc as Record<string, unknown>;
+      if (latestMp) {
+        parts.push(`\nDETAILED MEDDPICC ASSESSMENT (from latest call):`);
+        for (const key of ["metrics", "economic_buyer", "decision_criteria", "decision_process", "paper_process", "identify_pain", "champion", "competition"]) {
+          const cat = latestMp[key] as Record<string, unknown> | undefined;
+          if (cat) {
+            parts.push(`  ${key} (${cat.score}/5): ${cat.summary}`);
+            const missing = cat.missing_info as string[] | undefined;
+            if (missing && missing.length > 0) {
+              parts.push(`    Missing: ${missing.join("; ")}`);
+            }
+          }
+        }
+      }
+
+      // Coaching and mistakes from latest
+      const latestCa = analyses[0].call_analysis as Record<string, unknown>;
+      if (latestCa) {
+        parts.push(`\nLATEST CALL INTELLIGENCE:`);
+        parts.push(`  Call Score: ${latestCa.call_score}/100`);
+        parts.push(`  Key Mistakes: ${JSON.stringify(latestCa.key_mistakes)}`);
+        parts.push(`  Missed Opportunities: ${JSON.stringify(latestCa.missed_opportunities)}`);
+        parts.push(`  Open Questions: ${JSON.stringify(latestCa.open_questions)}`);
+        parts.push(`  Coaching: ${JSON.stringify(latestCa.coaching)}`);
+      }
+    }
+
+    // Full transcripts (more generous limit for deep analysis)
+    parts.push(`\n${"=".repeat(60)}`);
+    parts.push(`FULL TRANSCRIPTS (${analyses.length} calls):`);
+    parts.push(`${"=".repeat(60)}`);
+
+    for (let i = 0; i < analyses.length; i++) {
+      const a = analyses[i];
+      const date = a.created_at ? new Date(a.created_at as string).toLocaleDateString() : `Call ${i + 1}`;
+      const transcript = (a.labeled_transcript as string || "").slice(0, 6000);
+      parts.push(`\n--- CALL ${i + 1}: ${date} ---`);
+      parts.push(transcript);
+    }
+  }
+
+  return parts.join("\n");
+}
+
 // --- Engine ---
 
 function extractJSON(text: string): Record<string, unknown> | undefined {

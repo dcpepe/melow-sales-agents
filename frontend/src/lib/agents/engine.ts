@@ -30,7 +30,7 @@ export interface AgentResult {
 
 const MODELS: Record<ModelTier, string> = {
   fast: "claude-sonnet-4-20250514",
-  reasoning: "claude-opus-4-20250514",
+  reasoning: "claude-sonnet-4-20250514", // Use Sonnet for reliability — Opus can timeout on Vercel
 };
 
 const client = new Anthropic({
@@ -168,7 +168,7 @@ export async function buildDeepDealContext(dealId: string): Promise<string> {
   const analysisIds = (deal.analysis_ids as string[]) || [];
   if (analysisIds.length > 0) {
     const pipeline = kv.pipeline();
-    for (const id of analysisIds.slice(0, 5)) pipeline.get(`analysis:${id}`);
+    for (const id of analysisIds.slice(0, 3)) pipeline.get(`analysis:${id}`);
     const analyses = (await pipeline.exec()).filter(Boolean) as Record<string, unknown>[];
 
     // Full MEDPICC assessment from latest analysis
@@ -208,7 +208,7 @@ export async function buildDeepDealContext(dealId: string): Promise<string> {
     for (let i = 0; i < analyses.length; i++) {
       const a = analyses[i];
       const date = a.created_at ? new Date(a.created_at as string).toLocaleDateString() : `Call ${i + 1}`;
-      const transcript = (a.labeled_transcript as string || "").slice(0, 6000);
+      const transcript = (a.labeled_transcript as string || "").slice(0, 4000);
       parts.push(`\n--- CALL ${i + 1}: ${date} ---`);
       parts.push(transcript);
     }
@@ -260,7 +260,7 @@ export async function runAgent(
     throw new Error("Either deal_id or raw_context required");
   }
 
-  const modelId = process.env.CLAUDE_MODEL || MODELS[model];
+  const modelId = MODELS[model];
 
   const response = await client.messages.create({
     model: modelId,

@@ -127,7 +127,10 @@ function FollowUpContent() {
         save_version: true,
       });
       if (res.result.parsed) setData(res.result.parsed as unknown as FollowUpData);
-      else setError("Failed to parse response");
+      else {
+        // Try to display raw output if JSON parsing failed
+        setError(`Output received but not structured. Raw: ${res.result.output?.slice(0, 200)}...`);
+      }
     } catch (e) { setError(e instanceof Error ? e.message : "Failed"); }
     finally { setLoading(false); }
   }

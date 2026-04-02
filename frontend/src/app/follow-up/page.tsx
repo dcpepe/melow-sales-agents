@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Deal, listDeals, listAllGranolaNotes, getGranolaNoteDetail, GranolaNoteListItem, analyzeTranscript, runAgentApi, sendEmailApi } from "@/lib/api";
 import { Suspense } from "react";
+import ChatSidebar from "@/components/ChatSidebar";
 
 interface EmailVariant {
   strategy_label: string;
@@ -122,7 +123,7 @@ function FollowUpContent() {
       const res = await runAgentApi({
         recipe: "meddpicc_followup",
         deal_id: selectedDeal,
-        model: "fast",
+        model: "reasoning",
         save_version: true,
       });
       if (res.result.parsed) setData(res.result.parsed as unknown as FollowUpData);
@@ -315,9 +316,9 @@ function FollowUpContent() {
                 <div className="space-y-2">
                   {data.gap_priority.map((gap, i) => (
                     <div key={i} className="bg-red-50 rounded-xl p-4">
-                      <p className="text-sm font-medium text-red-900">{gap.field}</p>
-                      <p className="text-xs text-red-700 mt-1">{gap.why}</p>
-                      <p className="text-xs text-red-600 mt-1 font-medium">{gap.how}</p>
+                      <p className="text-sm font-medium text-red-900">{MEDDPICC_LABELS[gap.field] || gap.field}</p>
+                      <p className="text-xs text-red-700 mt-1.5">{gap.why}</p>
+                      <p className="text-xs text-gray-900 mt-2 font-medium bg-white rounded-lg px-3 py-2">{gap.how}</p>
                     </div>
                   ))}
                 </div>
@@ -406,6 +407,9 @@ function FollowUpContent() {
             </div>
           </div>
         )}
+
+        {/* Chat sidebar for tweaking emails */}
+        {selectedDeal && <ChatSidebar dealId={selectedDeal} />}
       </main>
     </div>
   );
